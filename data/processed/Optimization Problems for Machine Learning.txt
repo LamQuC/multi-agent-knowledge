@@ -1,0 +1,2116 @@
+Optimization Problems for Machine Learning: A Survey
+Claudio Gambella1, Bissan Ghaddar2, Joe Naoum-Sawaya2
+1IBM Research Ireland, Mulhuddart, Dublin 15, Ireland,2Ivey Business School, University of
+Western Ontario, London, Ontario N6G 0N1, Canada
+Abstract
+This paper surveys the machine learning literature and presents in an optimization framework several
+commonly used machine learning approaches. Particularly, mathematical optimization models are presented
+for regression, classication, clustering, deep learning, and adversarial learning, as well as new emerging
+applications in machine teaching, empirical model learning, and Bayesian network structure learning. Such
+models can benet from the advancement of numerical optimization techniques which have already played
+a distinctive role in several machine learning settings. The strengths and the shortcomings of these models
+are discussed and potential research directions and open problems are highlighted.
+Contents
+1 Introduction 2
+1.1 Machine Learning Basics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+1.2 Machine Learning and Operations Research . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+1.3 Aim and Scope . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+2 Regression Models 4
+2.1 Linear Regression . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2.2 Shrinkage methods . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+2.3 Regression Models Beyond Linearity . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+3 Classication 6
+3.1 Logistic Regression . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+3.2 Linear Discriminant Analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+3.3 Decision Trees . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+3.4 Support Vector Machines . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+3.4.1 Hard Margin SVM . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+3.4.2 Soft-Margin SVM . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+3.4.3 Sparse SVM . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+3.4.4 The Dual Problem and Kernel Tricks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+3.4.5 Support Vector Regression . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+3.4.6 Support Vector Ordinal Regression . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+4 Clustering 14
+4.1 Minimum Sum-Of-Squares Clustering (a.k.a. K-Means Clustering) . . . . . . . . . . . . . . . . 14
+4.2 Capacitated Clustering . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+4.3K-Hyperplane Clustering . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+5 Linear Dimension Reduction 16
+5.1 Principal Components . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+5.2 Partial Least Squares . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+6 Deep Learning 17
+6.1 Mixed Integer Programming for DNN Architectures . . . . . . . . . . . . . . . . . . . . . . . . 19
+6.2 Activation Ensembles . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+1arXiv:1901.05331v5  [math.OC]  11 Jan 20217 Adversarial Learning 22
+7.1 Targeted attacks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+7.2 Untargeted attacks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+7.3 Adversarial robustness . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24
+7.4 Data Poisoning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+8 Emerging Paradigms 25
+8.1 Machine Teaching . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+8.2 Empirical Model Learning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+8.3 Bayesian Network Structure Learning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+9 Conclusions 28
+1 Introduction
+The pursuit to create intelligent machines that can match and potentially rival humans in reasoning and making
+intelligent decisions goes back to at least the early days of the development of digital computing in the late 1950s
+[198]. The goal is to enable machines to perform cognitive functions by learning from past experiences and then
+solving complex problems under conditions that are varying from past observations. Fueled by the exponential
+growth in computing power and data collection coupled with the widespread of practical applications, machine
+learning is nowadays a eld of strategic importance.
+1.1 Machine Learning Basics
+Broadly speaking, machine learning relies on learning a model that returns the correct output given a certain
+input. The inputs, i.e., predictor measurements, are typically values that represent the parameters that dene
+a problem, while the output, i.e., response, is a value that represents the solution.
+Machine learning models fall into two categories: supervised and unsupervised learning [99, 129]. In
+supervised learning, a response measurement is available for each observation of predictor measurements and
+the aim is to t a model that accurately predicts the response of future observations. More specically, in
+supervised learning, values of both the input xand the corresponding output yare available and the objective
+is to learn a function fthat approximates with a reasonable margin of error the relationship between the input
+and the corresponding output. The accuracy of a prediction is evaluated using a loss function L(f(x);y) which
+computes a distance measure between the predicted output and the actual output. In a general setting, the
+best predictive model fis the one that minimizes the risk
+Ep[L(f(x);y)] =Z Z
+p(x;y)L(f(x);y)dxdy;
+wherep(x;y) is the probability of observing data point ( x;y) [210]. In practice p(x;y) is unknown, however
+the assumption is that an independent and identically distributed sample of data points ( x1;y1);:::; (xn;yn)
+forming the training dataset is given. Thus instead of minimizing the risk, the best predictive model fis the
+one that minimizes the empirical risk such that
+f= arg min1
+nnX
+i=1L(f(xi);yi):
+When learning a model, a key aspect to consider is model complexity. Learning a highly complex model
+may lead to overtting, which refers to having a model that ts the training data very well but generalizes
+poorly to other data. The minimizer of the empirical risk will often lead to overtting, and hence has a limited
+generalization property. Furthermore, in practice the data may contain noisy and incorrect values, i.e., outliers,
+which impacts the value of the empirical risk and subsequently the accuracy of the learned model. Attempting
+to nd a model that perfectly ts every data point in the dataset is thus not desired, since the predictive power
+of the model will be diminished when points that are far from typical are tted. Usually, the choice of fis
+restricted to a family of functions Fsuch that
+f= arg min
+f2F1
+nnX
+i=1L(f(xi);yi): (1)
+2The degree of model complexity is generally dictated by the nature and size of the training data. While simpler
+models are advised for small training datasets that do not uniformly cover the possible data ranges, complex
+models need large data sets to avoid overtting.
+On the other hand, in unsupervised learning, response variables are not available and the goal of learning
+is to understand the underlying characteristics of the observations. Unsupervised learning thus attempts to
+learn from the distribution of the data the distinguishing features and the associations in the data. As such,
+the main use-case for unsupervised learning is exploratory data analysis, where the purpose is to segment and
+cluster the samples in order to extract insights. While with supervised learning there is a clear measure of
+accuracy by evaluating the prediction to the known response, in unsupervised it is dicult to evaluate the
+validity of the derived structure.
+The fundamental theory of machine learning models and consequently their success can be largely attributed
+to research at the interface of computer science, statistics, and operations research. The relation between
+machine learning and operations research can be viewed along three dimensions: (a) machine learning applied
+to management science problems, (b) machine learning to solve optimization problems, (c) machine learning
+problems formulated as optimization problems.
+1.2 Machine Learning and Operations Research
+Leveraging data in business decision making is nowadays mainstream as any business in today's economy is
+instrumented for data collection and analysis. While the aim of machine learning is to generate reliable predic-
+tions, management science problems deal with optimal decision making. Thus, methodological developments
+that can leverage data predictions for optimal decision making is an area of research that is critical for future
+business value [30, 146, 172].
+Another area of research at the interface of machine learning and operations research is using machine
+learning to solve hard optimization problems and particularly NP-hard integer constrained optimization [41,
+138, 139, 158, 214]. In that domain, machine learning models are introduced to complement existing approaches
+that exploit combinatorial optimization through structure detection, branching, and heuristics.
+Lastly, the training of machine learning models can be naturally posed as an optimization problem with
+typical objectives that include optimizing training error, measure of t, and cross-entropy [42, 43, 77, 221]. In
+fact, the widespread adoption of machine learning is in part attributed to the development of ecient solution
+approaches for these optimization problems, which enabled the training of machine learning models. As we
+review in this paper, the development of these optimization models has largely been concentrated in areas of
+computer science, statistics, and operations research. However, diverging publication outlets, standards, and
+terminology persist.
+1.3 Aim and Scope
+The aim of this paper is to present machine learning as optimization problems. For that, in addition to publi-
+cations in classical operations research journals, this paper surveys machine learning and articial intelligence
+conferences and journals, such as the conference on Association for the Advancement of Articial Intelligence
+and the International Conference on Machine Learning. Furthermore, since machine learning research has
+rapidly accelerated with many important papers still in the review process, this paper also surveys a consid-
+erable number of relevant papers that are available on the arXiv repository. This paper also complements
+the recent surveys of [43, 77, 221] which described methodological developments for solving machine learning
+optimization problems; [21, 158] which discussed how machine learning advanced the solution approaches of
+mathematical programming; [71, 178] which described the interactions between operations research and data
+mining; [25] which surveyed solution approaches to machine learning models cast as continuous optimization
+problems; and [199] which provided an overview on the various levels of interaction between optimization and
+machine learning.
+This paper presents optimization models for regression, classication, clustering, and deep learning (includ-
+ing adversarial attacks), as well as new emerging paradigms such as machine teaching and empirical model
+learning. Additionally, this paper highlights the strengths and the shortcomings of the models from a math-
+ematical optimization perspective and discusses potential novel research directions. This is to foster eorts
+in mathematical programming for machine learning. While important criteria for contributions in opera-
+tions research are the convergence guarantees, deviation to optimality and speed increments with respect to
+benchmarks, machine learning applications have a partly dierent set of goals, such as scalability, reasonable
+execution time and memory requirement, robustness and numerical stability and, most importantly, general-
+3ization [25]. It is therefore common for mathematical programming approaches to sacrice optimality (local or
+global) and convergence guarantees to obtain better generalization properties, by adopting strategies such as
+early stopping [184].
+Following this introductory section, regression models are discussed in Section 2 while classication and
+clustering models are presented in Sections 3 and 4, respectively. Linear dimension reduction methods are
+reviewed in Section 5. Deep learning models are presented in Section 6, while models for adversarial learning
+are discussed in Section 7. New emerging paradigms that include machine teaching and empirical model
+learning are presented in Section 8. Finally, conclusions are drawn in Section 9.
+2 Regression Models
+2.1 Linear Regression
+Since the early era of statistics, linear regression models have been widely adopted in supervised learning for
+predicting a quantitative response. The central assumption is that the relationship between the dependent vari-
+ables ( feature measurements , orpredictors , orinput vector ) and the independent variable (real-valued output ,
+orresponse ) is representable with a linear function ( regression function ) with a reasonable accuracy. Linear
+regression models preserve considerable interest, given their simplicity, their extensive range of applications,
+and the ease of interpretability. In particular, machine learning interpretability, in its simplest form, is the
+ability to explain in a humanly understandable way the role of the inputs in the outcome [86].
+Linear regression aims to nd a linear function fthat expresses the relation between an input vector xof
+dimensionpand a real-valued output f(x) such as
+f(x) =0+x>; (2)
+where02Ris the intercept of the regression line and 2Rpis the vector of coecients corresponding to
+each of the input variables. In order to estimate the regression parameters 0and, one needs a training
+set (X;y) whereX2Rnpdenotesntraining inputs x1;:::;xnandydenotesntraining outputs where each
+xi2Rpis associated with the real-valued output yi. The objective is to minimize the empirical risk (1), in
+order to quantify via jthe association between predictor Xjand the response, for each j= 1;:::;p .
+The most commonly used loss function for regression is the least squared estimate , where tting a regression
+model reduces to minimizing the residual sum of squares (RSS) between the labels and the predicted outputs,
+such as
+RSS () =nX
+i=1(yi 0 pX
+j=1xijj)2: (3)
+The least squares estimate is known to have the smallest variance among all linear unbiased estimates, and has
+a closed form solution. However, this choice is not always ideal for tting, since it can yield a model with low
+prediction accuracy, due to a large variance, and often leads to a large number of non-zero regression coe-
+cients (i.e., low interpretability). Shrinkage methods discussed in Section 2.2 and Linear Dimension Reduction
+discussed in Section 5 are alternatives to the least squared estimate. Forward or backward elimination are also
+commonly used approaches to perform variable selection and to avoid overtting [99].
+The process of gathering input data is often aected by noise, which can impact the accuracy of statistical
+learning methods. A model that takes into account the noise in the features of linear regression problems is
+presented in [27], which also investigates the relationship between regularization and robustness to noise. The
+noise is assumed to vary in an uncertainty set U2Rnp, and the learner adopts the robust perspective:
+min
+0;max
+2Ug(y 0 (X+ )); (4)
+wheregis a convex function that measures the residuals (e.g., a norm function). The characterization of the
+uncertainty setUdirectly inuences the complexity of problem (4).
+The design of high-quality linear regression models requires several desirable properties, which are often
+conicting and not simultaneously implementable. A tting procedure based on Mixed Integer Quadratic
+Programming (MIQP) is presented in [31] and takes into account sparsity, joint inclusion of subset of features
+(called selective sparsity), robustness to noisy data, stability against outliers, modeler expertise, statistical
+signicance, and low global multicollinearity. Mixed Integer Programming (MIP) models for regression and
+4classication are also investigated in [33]. The regression problem is modeled as an assignment of data points
+to groups with the same regression coecients.
+In order to speed up the tting procedure and improve the interpretability of the regression model, irrelevant
+variables can be excluded via feature selection strategies. For example, feature selection is desired in case some
+regression variables are highly correlated. Multicollinearity can be detected by the condition number of the
+correlation matrix or the variance inuence factor (VIF) [61]. To achieve feature selection in this case, [202]
+introduces a mixed integer semidenite programming formulation to eliminate multicollinearity by bounding the
+condition number. The approach requires to solve a single optimization problem, in contrast with the cutting
+plane algorithm of [31]. Alternatively, [203] proposes a mixed integer quadratic optimization formulation with
+an upper bound on VIF, which is a better-grounded statistical indicator for multicollinearity with respect to
+the condition number.
+2.2 Shrinkage methods
+Shrinkage methods (also called regularization methods) seek to diminish the value of the regression coecients.
+The aim is to obtain a more interpretable model (with less relevant features), at the price of introducing
+some bias in the model determination. A well-known shrinkage method is Ridge regression, where a 2-norm
+penalization on the regression coecients is added to the loss function such that
+Lridge(0;) =nX
+i=1(yi 0 pX
+j=1xijj)2+pX
+j=12
+j; (5)
+wherecontrols the magnitude of shrinkage.
+Another technique for regularization in regression is the lasso regression , which penalizes the 1-norm of the
+regression coecients, and seeks to minimize the quantity
+Llasso(0;) =nX
+i=1(yi 0 pX
+j=1xijj)2+pX
+j=1jjj: (6)
+Whenis suciently large, the 1-norm penalty forces some of the coecient estimates to be exactly equal to
+zero, hence the models produced by the lasso are more interpretable than those obtained via Ridge regression.
+Ridge and lasso regression belong to a class of techniques to achieve sparse regression . As discussed in
+[32, 34], sparse regression can be formulated as the best subset selection problem [167]
+min1
+2ky 0 Xk2
+2 (7)
+s.tkk0k; (8)
+02R;2Rp; (9)
+wherekis an upper bound on the number of predictors with a non-zero regression coecient, i.e., the predictors
+to select, andjjjj0is the number of non-zero entries of , which is commonly referred to as the \0-norm"
+(though is not technically a norm as it does not satisfy the homogeneity property) . Problem (7){(9) is NP-
+hard, as proven in [174]. The recent work of [32] demonstrated that the best subset selection can be solved to
+near-optimal solutions using optimization techniques for values of pin the hundreds or thousands. Specically,
+by introducing the binary variables s2f0;1gp, the sparse regression problem can be transformed into the
+MIQP formulation
+min1
+2ky 0 Xk2
+2 (10)
+s.t MsjjMsj8j= 1;:::;p; (11)
+pX
+j=1sjk; (12)
+02R;2Rp; (13)
+s2f0;1gp; (14)
+5whereMis a large constant, Mkk1. Since the choice of the data dependent constant Mlargely aects
+the strength of the MIQP formulation, alternative formulations based on Specially Ordered Sets Type I can
+be devised [70].
+As discussed in [120], the prediction accuracy of best subset selection is however highly dependent on
+the noise present in the input dataset, and it is not possible to establish a dominance relationship over lasso
+regression and forward stepwise selection [91]. In order to limit the eect of noise in the input data, make the
+model more robust, and to avoid numerical issues, [34] introduces the Tikhonov regularization term1
+2kk2
+2
+with weight  >0 into the objective function of problem (10){(14), which is then solved using a cutting plane
+approach.
+The task of nding a linear model to express the relationship between regressors and output is a particular
+case of selecting the hyperplane that minimizes a measure of the deviation of the data with respect to the
+induced linear form. As presented in [37], locating a hyperplane 0+xT= 0;02R;2Rpto t a set of
+pointsxi2Rp;i= 1;:::;n , consists of nding ^0;^2arg min0;((0;)), where(0;) =fx1;:::;xng(0;)
+is a mapping to the residuals of the points on the hyperplane (according to a distance measure in Rp), and
+is an aggregation function on the residuals (e.g., residual sum of squares, least absolute deviation [89]). If
+the number of points nis much smaller than the dimension pof the space, feature selection strategies can be
+applied [32, 169]. We note that hyperplane tting is a variant of facility location problems [84, 192].
+2.3 Regression Models Beyond Linearity
+A natural extension of linear regression models is to consider nonlinear terms, which may capture complex
+relationships between regressors and predictors. Nonlinear regression models include, among others, polynomial
+regression, exponential regression, step functions, regression splines, smoothing splines and local regression
+[99, 129]. Alternatively, the Generalized Additive Models (GAMs) [119] maintain the additivity of the original
+predictorsX1;:::;Xpand the relationship between each feature and the response yis expressed using nonlinear
+functionsfj(Xj) such as
+y=0+pX
+j=1fj(Xj): (15)
+GAMs may increase the exibility and accuracy of the predictions with respect to linear models, while
+maintaining a certain level of interpretability of the predictors. However, one limitation is given by the
+assumption of additivity of the features. To further increase the model exibility, one could include predictors
+of the form XiXj, or consider non-parametric models, such as random forests and boosting. It has been
+empirically observed that GAMs do not represent well problems where the number of observations is much
+larger than the number of predictors. In [204] the Generalized Additive Model Selection is introduced to t
+sparse GAMs in high dimension with a penalized likelihood approach. The penalty term is derived from the
+tting criterion for smoothing splines. Alternatively, [68] proposes to t a constrained version of GAMs by
+solving a conic programming problem.
+As an intermediate model between linear and nonlinear relationships, compact and simple representations
+via piecewise ane models have been discussed in [137]. Piecewise ane forms emerge as candidate models
+when the tting function is known to be discontinuous [94], separable [81], or approximate to complex nonlinear
+expressions [80, 187, 213]. Fitting piecewise ane models involves partitioning the domain Dof the input data
+intoKsubdomains Di;i= 1;:::;K; and tting for each subdomain an ane function fi:Di!R, in
+order to minimize a measure of the overall tting error. To facilitate the tting procedure, the domain is
+partitioned a priori (see K-hyperplane clustering in Section 4.3). Neglecting domain partitioning may lead to
+large tting errors. In contrast, [5] considers both aspects in determining piecewise ane models for piecewise
+linearly separable subdomains via a mixed integer linear programming formulation and a tailored heuristic.
+Mixed integer models are also proposed in [207], however a partial knowledge of the subdomains is required.
+Alternatively, clustering techniques can be adopted for domain partitioning [94].
+3 Classication
+The task of classifying data is to decide the class membership of an unlabeled data item xbased on the
+training dataset ( X;y) where each xihas a known class membership yi. A recent comparison of machine
+learning techniques for binary classication is found in [18]. This section reviews the common binary and
+6multiclass classication approaches that include logistic regression, linear discriminant analysis, decision trees,
+and support vector machines.
+3.1 Logistic Regression
+In most problem domains, there is no functional relationship y=f(x) betweenyandx. In this case, the
+relationship between xandyhas to be described more generally by a probability distribution P(x;y) while
+assuming that the training contains independent samples from P. In this section, the label yis assumed to be
+binary, i.e., y2f0;1g. The optimal class membership decision is to choose the class label ythat maximizes
+the posterior distribution P(yjx). Logistic regression calculates the class membership probability for one of
+the two categories in the dataset as
+P(y= 1jx;0;) =h(x;0;) =1
+1 +e (0+>x);
+P(y= 0jx;0;) = 1 h(x;0;):
+The decision boundary between the two binary classes is formed by a hyperplane whose equation is 0+>x= 0.
+Points at this decision boundary have P(1jx;0;) =P(0jx;0;) = 0:5. The parameters 0andare usually
+obtained by maximum-likelihood estimation [87]
+max n
+i=1P(yijxi;0;) = max n
+i=1(h(xi;0;))yi(1 h(xi;0;))1 yi;
+which is equivalent to
+min nX
+i=1(yilogh(xi;0;) + (1 yi)log(1 h(xi;0;))): (16)
+Problem (16) is convex and dierentiable and rst order methods such as gradient descent as well as second
+order methods such as Newton's method can be applied to nd a global optimal solution.
+To tune the logistic regression model and to avoid overtting, variable selection can be performed where
+only the most relevant subsets of the xvariables are kept in the model [99]. Heuristic approaches such as
+forward selection or backward elimination can be applied to add or remove variables respectively, based on
+the statistical signicance of each of the computed coecients. Interaction terms can be also added to further
+complicate the model at the risk of overtting the training data.
+3.2 Linear Discriminant Analysis
+Linear discriminant analysis (LDA) is an approach for classication and dimensionality reduction. It is often
+applied to data that contains a large number of features (such as image data) where reducing the number of
+features is necessary to obtain robust classication. While LDA and Principal Component Analysis (PCA)
+(see Section 5.1) share the commonality of dimensionality reduction, LDA tends to be more robust than PCA
+since it takes into account the data labels in computing the optimal projection matrix [19].
+Given the dataset ( X;y) where each data sample xi2Rpbelongs to one of Kclasses such that if xibelongs
+to thek-th class then yi(k) is 1 where yi2f0;1gK, the input data is partitioned into KgroupsfkgK
+k=1where
+kdenotes the sample set of the k-th class which contains nkdata points. LDA maps the features space xi2Rp
+to a lower dimensional space qi2Rr(r<p ) through a linear transformation qi=G>xi[216]. The class mean
+of thek-th class is given by k=1
+nkP
+xi2kxiwhile the global mean in given by =1
+nPn
+i=1xi. In the
+projected space the class mean is given by k=1
+nkP
+qi2kqiwhile the global mean in given by =1
+nPn
+i=1qi.
+The within-class scatter and the between-class scatter evaluate the class separability and are dened as Sw
+andSbrespectively such that
+Sw=KX
+k=1X
+xi2k(xi k)(xi k)>; (17)
+Sb=KX
+k=1nk(k )(k )>: (18)
+7The within-class scatter evaluates the spread of the data around the class mean while the between-class scatter
+evaluates the spread of the class means around the global mean. For the projected data, the within-class and
+the between-class scatters are dened as SwandSbrespectively such that
+Sw=KX
+k=1X
+qi2k(qi k)(qi k)>=G>SwG; (19)
+Sb=KX
+k=1nk(k )(k )>=G>SbG: (20)
+The LDA optimization problem is bi-objective where the within-class scatter should be minimized while
+the between-class scatter should be maximized. The optimal transformation Gcan be obtained by maximizing
+the Fisher criterion (the ratio of between-class to within-class scatters)
+maxjGTSbGj
+jGTSwGj: (21)
+Note that since the between-class and the within-class scatters are not scalar, the determinant is used to
+obtain a scalar objective function. As discussed in [100], assuming that Swis invertible and non-singular,
+the Fisher criterion is optimized by selecting the rlargest eigenvalues of S 1
+wSband the corresponding eigen
+vectorsG
+1;G
+2;:::;G
+rform the optimal transformation matrix G= [G
+1jG
+2j:::jG
+r]. Instead of using Fisher
+criterion, bi-objective optimization techniques may also potentially be used to formulate and solve the LDA
+optimization problem exactly.
+An alternative formulation of the LDA optimization problem is provided in [63] by maximizing the minimum
+distance between each class center and the total class center. The proposed approach known as the large margin
+linear discriminant analysis requires the solution of non-convex optimization problems. A solution approach is
+also proposed based on solving a series of convex quadratic optimization problems.
+3.3 Decision Trees
+Decision trees are classical models for making a decision or classication using splitting rules organized into
+a tree data structure. Tree-based methods are non-parametric models that partition the predictor space into
+sub-regions and then yield a prediction based on statistical indicators (e.g., median and mode) of the segmented
+training data. Decision trees can be used for both regression and classication problems.
+For regression trees, the splitting of the training dataset into distinct and non-overlapping regions can
+be done using a top-down recursive binary splitting procedure. Starting from a root node that contains
+the full dataset, a cut that splits the data into distinct sets is identied. For the case of a univariate cut
+(i.e., involving only a single feature), the cutpoint bfor feature jis the one that leads to the two split-
+ted regions R1=fxijxij< bgandR2=fxijxijbgthat have the greatest possible reduction in the
+residual sum of squaresX
+i:xi2R1(j;b)(yi ^yR1)2+X
+i:xi2R2(j;b)(yi ^yR2)2;where ^yRdenotes the mean response for
+the training observations in region R. A multivariate split is of the form aTxi< b, whereais a vector. An-
+other optimization criterion is the measure of purity [45] such as Gini's index in classication problems. For
+classication problems, [45] highlights that, given their greedy nature, the classical methods based on recursive
+splitting do not lead to the global optimality of the decision tree. Since building optimal binary decision trees
+is known to beNP-hard [124], heuristic approaches based on mathematical programming paradigms, such as
+linear optimization [22], continuous optimization [23], and dynamic programming [9, 11, 75, 181], have been
+proposed.
+To nd provably optimal decision trees, [28] proposes a mixed integer programming formulation that has
+an exponential complexity in the depth of the tree. Given a xed depth D, the maximum number of nodes
+isT= 2D+1 1 indexed by t= 1;:::;T . Following the notation of [28], the nodes are split into two sets,
+branch nodes and leaf nodes. The branch nodes TB=f1;:::;bT
+2cgapply a linear split a>xi<bwhere the left
+child node includes the data points that satisfy this split while the right one includes the remaining data. In
+[28], the splits that are applied at the branch nodes are restricted to a single variable with the option of not
+splitting a node. The binary decision variable dttakes a value of 1 if branch node tis split and 0 otherwise.
+Since the splits are univariate, then variable ajt, which denotes the value of the coecient of feature jin the
+split at node t, is also binary. The cutpoint at node tisbt0.
+8At each of the leaf nodes TL=fbT
+2c+ 1;:::;Tg, a class prediction is made based on the data points that
+are included. The binary variable zitindicates if data point iis included to leaf node t, i.e.,zit= 1 or otherwise
+zit= 0. The binary decision variable ckttakes a value of 1 if leaf node tis assigned label k, and 0 otherwise
+while binary variable ltindicates if leaf node tis used, i.e., lt= 1 or otherwise lt= 0.
+The mixed integer programming formulation is
+min1
+^LX
+t2TLLt+X
+t2TBdt (22)
+s.t.LtNt Nkt n(1 ckt);8k= 1;:::;K; t2TL; (23)
+0LtNt Nkt+nckt8k= 1;:::;K; t2TL; (24)
+Nkt=1
+2nX
+i=1(1 +Yik)zit;8k= 1;:::;K; t2TL; (25)
+Nt=nX
+i=1zit8t2TL; (26)
+KX
+k=1ckt=lt8t2TL; (27)
+X
+t2TLzit= 18i= 1;:::;n; (28)
+zitlt8i= 1;:::;n; t2TL; (29)
+nX
+i=1zitNminlt8t2TL; (30)
+a>
+m(xi+)bm+ (1 +max)(1 zit)8i= 1;:::;n; t2TL; m2AL(t); (31)
+a>
+mxibm (1 zit)8i= 1;:::;n; t2TL;8m2AR(t); (32)
+pX
+j=1ajt=dt8t2TB; (33)
+0btdt8t2TB; (34)
+dtdp(t)8t2TBnf1g; (35)
+zit; lt2f0;1g 8i= 1;:::;n;8t2TL; (36)
+ckt2f0;1g 8k= 1;:::;K; t2TL; (37)
+ajt; dt2f0;1g 8j= 1;:::;p; t2TB: (38)
+The objective function (22) minimizes the normalized total misclassication loss1
+^LP
+t2TLLtand the decision
+tree complexity which is given byP
+t2TBdt, the total number of nodes that are split. is a tuning parameter
+and^Lis the baseline loss obtained by predicting the most popular class from the entire dataset. Constraints
+(23){(24) set the misclassication loss Ltat leaf node tasLt=Nt Nktif nodetis assigned label k(i.e
+ckt= 1), where Ntis the total number of data points at leaf node tandNktis the total number of data points
+at nodetwhose true labels are k. The counting of NktandNtis enforced by (25) and (26), respectively,
+whereYikis a parameter taking the value of 1 if data point ihas a label kand 1 otherwise. Constraints (27)
+indicate that each leaf node that is used (i.e., lt= 1) should be assigned to a label k= 1:::K . Constraints
+(28) indicate that each data point should be assigned to exactly one leaf node. Constraints (29){(30) indicate
+that data points can be assigned to a node only if that node is used and if a node is used then at least Nmin
+data points should be assigned to it. The splitting of the data points at each of the branch nodes is enforced
+by constraints (31){(32) where AL(t) is the set of ancestors of twhose left branch has been followed on the
+path from the root node to node t. Similarly, AR(t) is the set of ancestors of twhose right branch has been
+followed on the path from the root node to node t.andmaxare small numbers to enforce the strict split
+a>x < b at the left branch (see [28] for nding good values for andmax). Constraints (33){(34) indicate
+that the splits are restricted to a single variable with the option of not splitting a node ( dt= 0). As enforced
+by constraints (35), if p(t), the parent of node t, does not apply a split then so is node t. Finally constraints
+(36){(38) set the binary conditions.
+9An alternative formulation to the optimal decision tree problem is provided in [114]. The main dierence
+between the formulation of [114] and [28] is that the approach of [114] is specialized to the case where the
+features take categorical values. By exploiting the combinatorial structure that is present in the case of
+categorical variables, [114] provides a strong formulation of the optimal decision tree problem thus improving
+the computational performance. Furthermore the formulation of [114] is restricted to binary classication and
+the tree topology is xed, which lowers the required computational eort for solving the optimization problem
+to optimality. A commonality between the models presented in [28] and [114] is that the split that is considered
+at each node of the decision tree involves only one variable mainly to achieve better computational performance
+when solving the optimization model. More generally, splits that span multiple variables can also be considered
+at each node as presented in [38, 211, 212]. The approach of [38], which is extended in [39] to account for
+sparsity by using regularization, is based on a nonlinear continuous optimization formulation to learn decision
+trees with general splits.
+While single decision tree models are often preferred by data analysts for their high interpretability, the
+model accuracy can be largely improved by taking multiple decision trees into account. Such approaches include
+bagging, random forests, and boosting. Bagging creates multiple decision trees by obtaining several training
+subsets by randomly choosing with replacement data points from the training set and subsequently training a
+decision tree for each subset. Random forests create training subsets similar to bagging with the addition of
+randomly selecting a subset of features for training each tree. Boosting iteratively creates decision trees where
+a weight on the training data is set and is increased at each iteration for the misclassied data points so as to
+subsequently create a decision tree that is more likely to correctly classify previously misclassied data. These
+models that make predictions based on aggregating the predictions of individual trees are also known as tree
+ensemble. A mixed integer optimization model for tree ensemble has been recently proposed in [168].
+Decision trees can also be used in a more general range of applications as algorithms for problem solving,
+data mining, and knowledge representation. In [10], several greedy and dynamic programming approaches are
+compared for building decision trees on datasets with inconsistent labels (i.e, many-valued decision approach).
+Many-valued decisions can be evaluated in terms of multiple cost functions in a multi-stage optimization [12].
+Recently, [67] investigated conicting objectives in the construction of decision trees by means of bi-criteria
+optimization. Since the single objectives, such as minimizing average depth or the number of terminal nodes,
+are known to be NP-hard, the authors propose a bi-criteria optimization approach by means of dynamic
+programming.
+3.4 Support Vector Machines
+Support vector machines (SVMs) are another class of supervised machine learning algorithms that are based on
+statistical learning and have received signicant attention in the optimization literature [59, 209, 210]. Given
+a training set ( X;y) withntraining inputs where X2Rnpand binary response variables y2f  1;1gn, the
+objective of the support vector machine problem is to identify a hyperplane w>x+= 0, where w2Rpand
+2R, which separates the two classes of data points with a maximal separation margin measured as the width
+of the band that separates the two classes. In this section, wdenotes the vector of coecients corresponding to
+each of the input variables and is the intercept of the separating hyperplane. As detailed next, the underlying
+optimization problem is a linearly constrained convex quadratic optimization problem.
+3.4.1 Hard Margin SVM
+The most basic version of SVMs is the hard margin SVM that assumes that there exists a hyperplane that
+geometrically separates the data points into the two classes such that no data point is misclassied [73]. The
+training of the SVM model involves nding the hyperplane that separates the data and whose distance to the
+closest data point in either of the classes, i.e., margin, is maximized.
+The distance of a particular data point xito the separating hyperplane is
+yi(w>xi+)
+kwk2:
+The distance to the closest data point is normalized to1
+kwk2wherekwk2denotes the 2-norm. Thus the data
+points with labels y= 1 are on one side of the hyperplane such that w>x+1 while the data point
+with labels y= 1 are on the other side w>x+1. The optimization problem for nding the separating
+10hyperplane is then
+max1
+kwk2
+s.t.yi(w>xi+)18i= 1;:::;n;
+w2Rp;2R;
+which is equivalent to
+minkwk2
+2 (39)
+s.t.yi(w>xi+)18i= 1;:::;n; (40)
+w2Rp;2R; (41)
+that is a convex quadratic problem.
+Forcing the data to be separable by a linear hyperplane is a strong condition that often does not hold in
+practice. Thus, the soft-margin SVM, which relaxes the condition of perfect separability, is used instead.
+3.4.2 Soft-Margin SVM
+When the data is not linearly separable, problem (39){(41) is infeasible. Alternatively, [24] proposed a linear
+program that minimizes a weighted average of the errors given by the points lying on the wrong side of the
+separator. This work was then extended in [73] which presented the soft margin SVM. The soft margin SVM
+introduces slack variables i0 into constraints (40) which are then penalized in the objective function as a
+proxy to minimizing the number of data points that are on the wrong side. The soft-margin SVM optimization
+problem is
+minkwk2
+2+CnX
+i=1i (42)
+s.t.yi(w>xi+)1 i8i= 1;:::;n; (43)
+w2Rp;2R; (44)
+i08i= 1;:::;n: (45)
+Another common alternative is to include the error term iin the objective function by using the squared
+hinge lossPn
+i2
+iinstead of the hinge lossPn
+ii. The hinge loss function takes a value of zero for a data point
+that is correctly classied while it takes a positive value that is proportional to the distance from the separating
+hyperplane for a misclassied data point. Hyperparameter Cis then tuned to obtain the best classier.
+Besides the direct solution of problem (42){(45) as a convex quadratic problem, replacing the 2-norm by
+the 1-norm leads to a linear optimization problem generally at the expense of higher misclassication rate [44].
+3.4.3 Sparse SVM
+Using the 1-norm is also an approach to sparsify w, i.e., reduce the number of features that are involved in the
+classication model [44, 224]. An approach known as the elastic net includes both the 1-norm and the 2-norm
+in the objective function and tunes the bias towards one of the norms through a hyperparameter [217, 228].
+Several other approaches for dealing with sparsity in SVM have been proposed in [8, 88, 103, 105, 115, 164, 183].
+The number of features can be explicitly modeled in (42){(45) by using binary variables z2f0;1gpwhere
+zj= 1 indicates that feature jis selected and otherwise zj= 0 [60]. A constraint limiting the number of
+features to a maximum desired number can be enforced resulting in the following mixed integer quadratic
+problem
+minkwk2
+2+CnX
+i=1i (46)
+s.t.yi(w>xi+)1 i8i= 1;:::;n; (47)
+ MzjwjMzj8j= 1;:::;p; (48)
+pX
+j=1zjr; (49)
+11w2Rp;2R; (50)
+zj2f0;1g 8j= 1;:::;p; (51)
+i08i= 1;:::;n: (52)
+Constraints (48) force zj= 1 when feature jis used, i.e., wj6= 0 (Mdenotes a suciently large number).
+Constraints (49) set a limit ron the maximum number of features that can be used.
+3.4.4 The Dual Problem and Kernel Tricks
+The data points can be mapped to a higher dimensional space through a mapping function (x). A soft margin
+SVM can then be applied such that
+minkwk2
+2+CnX
+i=1i (53)
+s.t.yi(w>(xi) +)1 i8i= 1;:::;n; (54)
+w2Rp;2R; (55)
+i08i= 1;:::;n: (56)
+Through this mapping, the data has a linear classier in the higher dimensional space however a nonlinear
+separation function is obtained in the original space.
+To solve problem (53){(56), the following dual problem is rst obtained
+max
+nX
+i=1i 1
+2nX
+i;j=1ijyiyj(xi)>(xj)
+s.t.nX
+i=1iyi= 08i= 1;:::;n;
+0iC8i= 1;:::;n;
+whereiare the dual variables of constraints (54). Given a kernel function K:RmRm!Rwhere
+K(xi;xj) =(xi)>(xj), the dual problem is
+max
+nX
+i=1i 1
+2nX
+i;j=1ijyiyjK(xi;xj)
+s.t.nX
+i=1iyi= 0;8i= 1;:::;n;
+0iC;8i= 1;:::;n;
+which is a convex quadratic optimization problem. Thus only the kernel function K(xi;xj) is required while
+the explicit mapping is not needed.
+Among the commonly used kernel functions is the polynomial K(xi;xj) = (x>
+ixj+c)dwhereccontrols
+the trade-o between the higher-order and the lower-order terms in the polynomial and dis the degree of the
+polynomial. The polynomial kernel models the interaction between the data up to the degree d. A high degree
+polynomial tends to overt the training data. Another kernel function is the radial basis K(xi;xj) =e kxi xjk2
+2
+
+whereacts as a smoothing parameter. A smaller tends to overt the training data. The sigmoidal kernel
+K(xi;xj) = tanh('xi>xj+c) is also commonly used where 'is a scaling parameter of the input data and
+cis a shifting parameter that controls the threshold of the mapping. Further details on kernel functions are
+provided in [2, 59, 122].
+Since the classication in high dimensional space can be dicult to interpret for practitioners, Binarized
+SVM (BSVM) replaces the continuous predictor variables with a linear combination of binary cuto variables
+[56]. BSVM is also extended in [57] to capture the interactions between the relevant variables. Another
+important practical aspect to consider is data uncertainty. Often the training data suers from inaccuracies in
+the labels and in the features that are collected which may negatively aect the performance of the classiers.
+While typically regularization is used to mitigate the eect of uncertainty, [29] proposes robust optimization
+models for logistic regression, decision trees, and support vector machines and shows increased accuracy over
+regularization, and most importantly without changing the complexity of the classication problem.
+123.4.5 Support Vector Regression
+Although as discussed earlier, SVM has been introduced for binary classication, its extension to regression,
+i.e., support vector regression, has received signicant interest in the literature [197]. The core idea of support
+vector regression is to nd a linear function f(x) =w>x+that can approximate with a tolerance a training
+set (X;y) wherey2R[210]. Such a linear function may however not exist, and thus slack variables +
+i0
+and 
+i0 denoting positive and negative deviations from the desired tolerance are introduced and minimized
+similar to the soft-margin SVM. The corresponding optimization problem is
+minkwk2
+2+CnX
+i=1(+
+i+ 
+i) (57)
+s.t.yi w>xi ++8i= 1;:::;n; (58)
+w>xi+ yi+ 8i= 1;:::;n; (59)
+w2Rp;2R; (60)
++
+i;  
+i08i= 1;:::;n: (61)
+Hyperparameter Cis tuned to adjust the weight on the deviation from the tolerance . This deviation from 
+is the-insensitive loss function jjgiven by
+jj=(
+0 ifjj;
+jj otherwise.
+As detailed extensively in [197], kernel tricks can also be applied to (57){(61) which is solved by formulating
+the dual problem.
+3.4.6 Support Vector Ordinal Regression
+In situations where the data contains ordering preferences, i.e., the training data is labeled by ranks, where
+the order of the rankings is relevant while the distances between the ranks is not dened or irrelevant to the
+training, the purpose of learning is to nd a model that maps the preference information.
+The application of classic regression models for such type of data requires the transformation of the ordinal
+ranks to numerical values. However, such approaches often fail in providing robust models as an appropriate
+function to map the ranks to distances is challenging to nd [145]. An alternative is to encode the ordinal
+ranks into binary classications at the expense of a large increase in the scale of the problems [118, 121].
+An extension of SVM for ordinary data has been proposed in [195] and extended in [69]. Given a training
+dataset with rordered categories f1;:::;rgwherenjis the number of data points labeled as order j, the
+support vector ordinal regression nds r 1 separating parallel hyperplanes w>x+j= 0 where jis the
+threshold associated with the hyperplane that separates the orders kjfrom the remaining orders. Thus
+xi;k, theithdata sample of order kj, should have a function value lower than the margin j 1 while the
+data samples with orders k > j should have a function value greater than the margin j+ 1. The errors for
+violating these conditions are given by +
+i;kj0 and 
+i;kj0 respectively. Following [69], the associated SVM
+formulation is
+minkwk2
+2+Cr 1X
+j=1(jX
+k=1nkX
+i=1+
+i;kj+rX
+k=j+1nkX
+i=1 
+i;kj)
+s.t.w>xi;k j 1 ++
+i;kj8k= 1;:::;j; j = 1;:::;r 1; i= 1;:::;nk;
+w>xi;k j1  
+i;kj8k=j+ 1;:::;r; j = 1;:::;r 1; i= 1;:::;nk;
+w2Rp; j2R8j= 1;:::;r 1;
++
+i;kj08k= 1;:::;j; j = 1;:::;r 1; i= 1;:::;nk;
+ 
+i;kj08k=j+ 1;:::;r; j = 1;:::;r 1; i= 1;:::;nk:
+As detailed in [69], kernel tricks can be also applied by considering the dual problem. Finally we note
+that preference modeling using machine learning has several commonalities with various approaches in multi-
+criteria decision analysis and most notably, robust ordinal regression. We refer the readers to [72] for a detailed
+comparison between preference learning using machine learning and muti-criteria decision making.
+134 Clustering
+Data clustering is a class of unsupervised learning approaches that has been widely used, particularly in
+applications of data mining, pattern recognition, and information retrieval. Given an input X2Rnp, which
+includesnunlabeled observations x1;:::;xnwithxi2Rp, cluster analysis aims at nding Ksubsets of
+X, called clusters, which are homogeneous and well separated. Homogeneity indicates the similarity of the
+observations within the same cluster (typically, by means of a distance metric), while the separability accounts
+for the dierences between entities of dierent clusters. The two concepts can be measured via several criteria
+and lead to dierent types of clustering algorithms (see, e.g., [117]). The number of clusters is typically a
+tuning parameter to be xed before determining the clusters. An extensive survey on data clustering analysis
+is provided in [128].
+In case the entities are points in a Euclidean space, the clustering problem is often modeled as a network
+problem and shares many similarities with classical problems in operations research, such as the p-median
+problem [20, 143, 163, 173]. In the following subsections, the commonly used minimum sum-of-squares
+clustering, the capacitated clustering, and the K-hyperplane clustering are discussed.
+4.1 Minimum Sum-Of-Squares Clustering (a.k.a. K-Means Clustering)
+Minimum sum-of-squares clustering is one of the most commonly adopted clustering algorithms. It requires
+to nd a number of disjoint clusters for observations xi;i= 1;:::;n , wherexi2Rpsuch that the distance to
+cluster centroids is minimized. Given that typically the number of clusters Kis a-priori xed, the problem
+is also referred to as K-means clustering. The decision of the cluster size is typically taken by examining the
+elbow curve, or similarity indicators, such as silhouette values and Calinski-Harabasz index, or via mathematical
+programming approaches including the maximization of the modularity of the associated graph [50, 51].
+Dening the binary variables
+uij=(
+1 if observation ibelongs to cluster j
+0 otherwise,
+and the centroid j2Rpof each cluster j, the problem of minimizing the within-cluster variance is formulated
+in [3] as the following mixed integer nonlinear program
+minnX
+i=1KX
+j=1uijkxi jk2
+2 (62)
+s.t.KX
+j=1uij= 18i= 1;:::;n; (63)
+j2Rp8j= 1;:::;K; (64)
+uij2f0;1g 8i= 1;:::;n; j = 1;:::;K: (65)
+By introducing the variables dijwhich denote the distance of observation ifrom centroid j, the following
+linearized formulation is obtained
+minnX
+i=1KX
+j=1dij
+s.t.KX
+j=1uij= 1;8i= 1;:::;n;
+dijjjxi jjj2
+2 M(1 uij)8i= 1;:::;n; j = 1;:::;K;
+j2Rp8j= 1;:::;K;
+uij2f0;1g; dij08i= 1;:::;n; j = 1;:::;K:
+Parameter Mis a suciently large number. A heuristic solution approach based on the gradient method is
+proposed for problem (62){(65) in [13]. Alternatively, a column generation approach for large-scale instances
+has been proposed in [3] and a bundle approach has been presented in [132].
+The case where the space is not Euclidean is considered in [58]. Alternatively, [189] presents the Heteroge-
+neous Clustering Problem (HCP) where the observations to cluster are associated with multiple dissimilarity
+14matrices. HCP is formulated as a mixed integer quadratically constrained quadratic program. Another variant
+is presented in [188] where the homogeneity is expressed by the minimization of the maximum diameter Dmaxof
+the clusters. The resulting nonconvex bilinear mixed integer program is solved via a graph-theoretic approach
+based on seed nding.
+Many common solution approaches for K-means clustering are based on heuristics. A popular method
+implemented in data science packages (e.g., scikit-learn [182]) is the two-step improvement procedure proposed
+in [161]. Starting from a sample of Kpoints in set Xas initial cluster centers (centroids 0
+j), at each iteration
+k, the algorithm assigns each point in Xto the nearest centroid k
+jand then computes the centroids k+1
+jof
+the new partition. The procedure is guaranteed to decrease the within-cluster variance and it is run until this
+metric is suciently low. Given the dependency of the procedure to the choice of 0
+j, typically the clustering is
+repeated with dierent initial centroids and the best clusters are selected. Other heuristics relax the assumption
+to produce exactly Kclusters. For instance, [161] merges clusters if their centroids are suciently close.
+Clustering is also used within heuristics for hard combinatorial problems ([101, 149]), and can be integrated
+in problems where the evaluation of multiple solutions is important (e.g., Cluster Newton Method [6, 104]).
+Cluster Newton method approximates the Jacobian in the domain covered by the cluster of points, instead of
+locally as done by the traditional Newton's Method [136], and this has a regularization eect.
+4.2 Capacitated Clustering
+The Capacitated Centered Clustering Problem (CCCP) deals with nding a set of clusters with a capacity
+limitation and homogeneity expressed by the similarity to the cluster centre. Given a set of potential clusters
+1;:::;K , a mathematical formulation for CCCP is given in [175] as
+minnX
+i=1KX
+j=1sijuij (66)
+s.tKX
+j=1uij= 18i= 1;:::;n; (67)
+KX
+j=1vjK; (68)
+uijvj8i= 1;:::;n; j = 1;:::;V; (69)
+nX
+i=1qiuijQj8j= 1;:::;K; (70)
+uij;vj2f0;1g 8i= 1;:::;n; j = 1;:::;K:
+ParameterKis an upper bound on the number of clusters, sijis the dissimilarity measure between observation
+iand cluster j,qiis the weight of observation i, andQjis the capacity of cluster j. Variableuijdenotes the
+assignment of observation ito clusterjand variable vjis equal to 1 if cluster jis used. If the metric sijis
+a distance and the clusters are homogeneous (i.e., Qj=Q8j), the formulation also models the well-known
+facility location problem. A solution approach is discussed in [62] while an alternative quadratic programming
+formulation is presented in [154]. Solution heuristics have also been proposed in [163] and [191].
+4.3K-Hyperplane Clustering
+In theK-Hyperplane Clustering ( K-HC) problem, a hyperplane, instead of a center, is associated with each
+cluster. This is motivated by applications such as text mining and image segmentation, where collinearity and
+coplanarity relations among the observations are the main interest of the unsupervised learning task, rather
+than the similarity. Given the observations xi;i= 1;:::;n , theK-HC problem requires to nd Kclusters,
+and a hyperplane Hj=fx2Rp:wT
+jx=jg, withwj2Rpandj2R, for each cluster j. The aim is to
+minimize the sum of the squared 2-norm Euclidean orthogonal distances between each observation and the
+corresponding cluster.
+Given that the orthogonal distance of xito hyperplane Hjis given byjwT
+jxi jj
+kwk2,K-HC is formulated in [4]
+as the following mixed integer quadratically constrained quadratic problem
+15minnX
+i=12
+i (71)
+s.tKX
+j=1uij= 18i= 1;:::;n; (72)
+i(wT
+jxi j) M(1 uij)8i= 1;:::;n; j = 1;:::;K; (73)
+i( wT
+jxi+j) M(1 uij)8i= 1;:::;n; j = 1;:::;K; (74)
+kwjk218j= 1;:::;K; (75)
+i08i= 1;:::;n; (76)
+wj2Rp;j2R8j= 1;:::;K; (77)
+uij2f0;1g 8i21;:::;n; j = 1;:::;K: (78)
+Binary variable uijis equal to 1 if point xiis assigned to cluster j, and 0 otherwise. Linear constraints (73){
+(74) setias the distance between point xiand the hyperplane of cluster j. These constraints are enforced
+only ifuijis equal to 1, otherwise they are redundant. The non-convexity is due to constraint (75). As a
+solution approach, a distance-based reassignment heuristic that outperforms spatial branch-and-bound solvers
+is proposed in [4].
+5 Linear Dimension Reduction
+In Section 2.2, shrinkage methods have been discussed as a way to improve model interpretability by tting
+a model with all original ppredictors. In this section, we discuss dimension reduction methods that search
+forH <p linear combinations of the predictors such that Zh=Pp
+j=1h
+jXj(also called projections ) whereXj
+denotes column jof X, i.e., the vector of values of feature jof the training set. While this section focuses on
+Principle Component Analysis and Partial Least Squares, we note that other linear and nonlinear dimension
+reduction methods exist. An extensive survey on benets and shortcomings of dimension reduction methods
+is presented in [76].
+5.1 Principal Components
+Principal Components Analysis (PCA) [131] aims to nd a low-dimensional representation of the dataset with
+highly informative derived features. Principal components are ordered in terms of their explained variances,
+which measure the amount of information retained from the original set of features X1;:::;Xp.
+In particular, assuming the regressors are standardized to a mean of 0 and a variance of 1, the direction of
+the rst principal component is a unit vector 12Rpthat is the solution of the optimization problem
+max
+12Rp1
+nnX
+i=10
+@pX
+j=11
+jxij1
+A2
+(79)
+s.t.pX
+j=1(1
+j)2= 1: (80)
+Problem (79){(80) is the traditional formulation of PCA and can be solved via Lagrange multipliers methods.
+Since the formulation is sensitive to the presence of outliers, several approaches have been proposed to improve
+robustness [185]. One approach is to replace the 2-norm in (79) with the 1-norm.
+An iterative approach can be used to obtain the principal components where the rst principal component
+Z1=Pp
+j=11
+jXjis the projection of the original features with the largest variability. The subsequent principal
+components are obtained iteratively where each principal component Zh;h= 2;:::;H is obtained by a linear
+combination of the feature columns X1;:::;Xp. EachZhis uncorrelated with Z1;:::;Zh 1which have larger
+variance. Introducing the sample covariance matrix Sof the regressors Xj, the direction h2Rpof theh-th
+principal component Zhis the solution of
+16max
+h2Rp1
+nnX
+i=10
+@pX
+j=1h
+jxij1
+A2
+(81)
+s.t.pX
+j=1(h
+j)2= 1; (82)
+h>Sl= 08l= 1;:::;h 1: (83)
+PCA can be used for several data analysis problems which benet from reducing the problem dimension.
+Principal Components Regression (PCR) is a two-stage procedure that uses the rst principal components as
+predictors for a linear regression model. PCR has the advantage of including less predictors than the original
+set and at the same time retaining the variability of the dataset in the derived features. However, principal
+components might not be relevant with the response variables of the regression.
+To select principal components in regression models, the regression loss function and the PCA objective
+function can be combined in a single-step quadratic programming formulation [135]. Since the identication
+of the principal components does not require any knowledge of the response y, PCA can also be adopted in
+unsupervised learning such as in the k-means clustering method (see Section 4.1, [85]). A known drawback
+of PCA is interpretability. To promote the sparsity of the projected components, and thus make them more
+interpretable, [55] formulates a Mixed Integer Nonlinear Programming (MINLP) problem and shows that the
+level of sparsity can be imposed in the model. Alternatively, the variance of the principal components and
+their sparsity can be jointly maximized in a biobjective framework [54].
+5.2 Partial Least Squares
+Partial Least Squares (PLS) identies transformed features Z1;:::;ZHby projecting both the predictors X
+and their corresponding response yinto a new space, and this is an approach specic to regression problems
+[99]. PLS is particularly viable for problems with a large number of features compared to observations as it
+aims to identify the latent factors that explain most the variations in the response. PLS corresponds to tting
+simple regression models each containing a single predictor variable.
+The rst PLS direction is denoted by 12Rpwhere each component 1
+jis found by tting a regression
+with predictor Xjand response y. The rst PLS direction points towards the features that are more strongly
+related to the response. For computing the second PLS direction, the features vectors X1;:::;Xpare rst
+orthogonalized with respect to Z1(as per the Gram-Schmidt approach), and then individually tted in simple
+regression models with response y. The process is iterated for all PLS directions H <p . The coecient of the
+simple regression of yonto each original feature Xjcan also be computed as the inner product hy;Xji. Similar
+to PCR, PLS then ts a linear regression model with regressors Z1;:::;ZHand response y.
+While the principal components directions maximize variance, PLS searches for directions Zh=Pp
+j=1h
+jXj
+with both high variance and high correlation with the response. The h-th direction hcan be found by solving
+the optimization problem
+max
+h2RpCorr(y;Xh)2Var(Xh) (84)
+s.t.pX
+j=1(h
+j)2= 1; (85)
+h>Sl= 08l= 1;:::;h 1; (86)
+where Corr() indicates the correlation matrix, Var() the variance, Sthe sample covariance matrix of Xj, and
+(86) ensures that Zmis uncorrelated with the previous directions Zl=Pp
+j=1l
+jXj.
+6 Deep Learning
+Deep Learning received a rst momentum until the 80s due to universal approximation results [79, 123]. Neural
+networks with a single layer with a nite number of units can represent any multivariate continuous function on
+a compact subset in Rnwith arbitrary precision. However, the computational complexity required for training
+Deep Neural Networks (DNNs) hindered their diusion by late 90s. Starting 2010, the empirical success of
+17x0
+1
+x0
+2
+x0
+3x1
+1
+x1
+2
+x1
+3
+x1
+4
+x1
+5x2
+1
+x2
+2Hidden
+layerInput
+layerOutput
+layer
+Figure 1: Deep Feedforward Neural Network with 3 layers. The input layer has n0= 3 units, the hidden layer
+hasn1= 5 units and there are n2= 2 output units. This is an example of fully connected network, where each
+neuron in one layer is connected to all neurons in the next layer. Training such network requires to determine
+weight matrices W02R35,W12R52, and bias vectors b12R5,b22R2:
+DNNs has been widely recognized for several reasons, including the development of advanced processing units,
+namely GPUs, the advances in the eciency of training algorithms such as backpropagation, the establishment
+of proper initialization parameters, and the massive collection of data enabled by new technologies in a variety
+of domains (e.g., healthcare, supply chain management [205], marketing, logistics [215], Internet of Things).
+DNNs can be used for the regression and classication tasks discussed in the previous sections, especially
+when traditional machine learning models fail to capture complex relationships between the input data and the
+quantitative response, or class, to be learned. The aim of this section is to describe the decision optimization
+problems associated with DNN architectures. To facilitate the presentation, the notation for the common
+parameters is provided in Table 1, and an example of fully connected feedforward network is shown in Figure
+1.
+f0;:::;Lg layers indices.
+nlnumber of units , orneurons , in layerl.
+ element-wise activation function.
+U(j;l)j-th unit of layer l.
+Wl2Rnlnl+1weight matrix for layer l<L .
+bl2Rnlbias vector for layer l>0 .
+(X;y) training dataset, with observations xiand responses yi;i= 1;:::;n:
+xloutput vector of layer l(l= 0 indicates input feature vector,l >0 indicates derived
+feature vector).
+Table 1: Notation for DNN architectures.
+The output vector xLof a DNN is computed by propagating the information from the input layer to each
+following layer via the weight matrices Wl; l < L , the bias vectors bl; l > 0, and the activation function ,
+such that
+xl=(Wl 1xl 1+bl 1)8l= 1;:::;L: (87)
+Activation functions indicate whether a neuron should be activated or not in the network, and are responsible
+for the capability of DNNs to learn complex relationships between the input and the output. The rectied
+linear unit
+ReLU :Rn!Rn;ReLU (z) = (max(0;z1);:::; max(0;zn))
+is typically one of the preferred options for activation functions, mainly because it can be optimized with
+gradient-based methods for DNN training, and tends to produce sparse networks (where not all neurons are
+activated).
+In the context of regression, the components of xLcan directly represent the response values learned. For
+a classication problem, the vector xLcorresponds to the logits of the classier. In order to interpret xLas
+a vector of class probabilities, functions Fsuch as the logistic sigmoidal or the softmax can be applied to
+18xL[108]. The classier Cmodeled by the DNN then classies an input xwith the label correspondent to the
+maximum activation C(x) = arg max
+i=1;:::;nLF(xL
+i):
+The task of training a DNN consists of determining the weights Wland the biases blthat make the model
+best t the training data, according to a certain measure of training loss. In multivariate regression with
+Kresponse variables [126, 166], the training loss Lis typically the sum-of-squared errorsKX
+k=1nX
+i=1(yik xL
+k)2
+whereyikdenotes response kcorresponding to the i-th input vector. For classication with Kclasses, cross-
+entropy KX
+k=1nX
+i=1yiklogxL
+kis preferred. An eective approach to minimize Lis by gradient descent, called
+back-propagation in this setting. Typically, one is not interested in a proven local minimum of L, as this is
+likely to overt the training dataset and yield a learning model with a high variance. Similar to the Ridge
+regression (see Section 2), the loss function can include regularization terms, such as a weight decay term
+L 1X
+l=0nlX
+i=1(bl
+i)2+L 1X
+l=0nlX
+i=1nl+1X
+j=1(Wl
+ij)2
+;
+or alternatively a weight elimination penalty term
+L 1X
+l=0nlX
+i=1(bl
+i)2
+1 + (bl
+i)2+L 1X
+l=0nlX
+i=1nl+1X
+j=1(Wl
+ij)2
+1 + (Wl
+ij)2
+:
+Weight decay limits the growth of the weights, which speeds up the training via backpropagation, and has
+been shown to limit overtting (see [184] for a discussion about overtting in Neural Networks).
+The aim of this section is to present the optimization models that are used in DNN for feedforward architec-
+tures. Several other neural network architectures have been investigated in deep learning [108]. In particular,
+Convolutional Neural Networks (CNN) [152] have been successfully adopted for processing data with a grid-
+like topology, such as images [147], videos [133], and trac analytics [219]. In CNN, the output of layers is
+obtained via convolutions (instead of the matrix multiplication in feedforward networks), and pooling opera-
+tions on nearby units (such as average or maximum operators). In the remainder of the section, mixed integer
+programming models for DNN training are introduced in Section 6.1, and ensemble approaches with multiple
+activation functions are discussed in Section 6.2.
+6.1 Mixed Integer Programming for DNN Architectures
+Motivated by the considerable improvements of mixed integer programming solvers, a natural question is how
+to model a trained DNN as a MIP. In [97], DNNs with ReLU activation
+xl=ReLU (Wl 1xl 1+bl 1)8l= 1;:::;L (88)
+are modeled as a MIP with decision variables xlexpressing the output vector of layer l,l>0 andl0is the input
+vector. To express (88) explicitly, each unit U(j;l) of the DNN is associated with binary activation variables
+zl
+j, and continuous slack variables sl
+j. The following mixed integer linear problem is proposed
+minLX
+l=0nlX
+j=1cl
+jxl
+j+LX
+l=1nlX
+j=1l
+jzl
+j (89)
+s.t.nl 1X
+i=1wl 1
+ijxl 1
+i+bl 1
+j=xl
+j sl
+j8l= 1;:::;L;j = 1;:::;nl; (90)
+xl
+j(1 zl
+j)Mj;l
+x8l= 1;:::;L;j = 1;:::;nl; (91)
+sl
+jzl
+jMj;l
+s8l= 1;:::;L;j = 1;:::;nl; (92)
+0xl
+jubl
+j8l= 1;:::;L;j = 1;:::;nl; (93)
+0sl
+jubl
+j8l= 1;:::;L;j = 1;:::;nl; (94)
+whereMj;l
+x;Mj;l
+sare suitably large constants. We note that since the DNN is trained, the weights wl
+ijand bias
+bl
+jare xed parameters. Depending on the application, dierent activation weights cl
+jand activation costs l
+j
+19can also be used for each U(j;l). If known, upper bound ubl
+jcan be enforced on the output xl
+jof unitU(j;l)
+via constraints (93), and slack sl
+jcan be bounded by ubl
+jvia constraints (94).
+The proposed MIP is feasible for every input vector x0since it computes the activation in the subsequent
+layers. Constraints (91) and (92) are known to have a weak continuous relaxation, and the tightness of the
+chosen constants (bounds) is crucial for their eectiveness. Several optimization solvers can directly handle
+such kind of constraints as indicator constraints [40]. In [97], a bound-tightening strategy to reduce the
+computational times is proposed and the largest DNN tested with this approach is a 5-layer DNN with 20 +
+20 + 10 + 10 + 10 internal units.
+Problem (89){(94) can model several tasks in Deep Learning, other than the computation of quantitative
+responses in regression, and of classication. Such tasks include
+•Pooling operations: The average and the maximum operators
+Avg(xl) =1
+nlnlX
+i=1xl
+i;
+Max(xl) = max(xl
+1;:::;xl
+nl);
+can be incorporated in the hidden layers. In the case of max pooling operations, additional indicator
+constraints are required. For example, average and maximum operators are often used in CNNs, as
+mentioned earlier in Section 6.
+•Maximizing the unit activation: By maximizing the objective function (89), one can nd input exam-
+plesx0that maximize the activation of the units. This may be of interest in applications such as the
+visualization of image features.
+•Building crafted adversarial examples: Given an input vector x0labeled asby the DNN, the search
+for perturbations of x0that are classied as 06=(adversarial examples ), can be conducted by adding
+conditions on the activation of the nal layer Land minimizing the perturbation. In [97], such condi-
+tions are actually restricting the search for adversarial examples and the resulting formulation does not
+guarantee an adversarial solution nor can prove that no adversarial examples exist. Adversarial learning
+is the objective of the discussion in Section 7.
+•Training: In this case, the weights and biases are decision variables. The resulting bilinear terms in (90)
+and the considerable number of decision variables in the formulation limit the applicability of (89){(94)
+for DNN training.
+Another attempt in modelling DNNs via MIPs is provided by [140], in the context of Binarized Neural
+Networks (BNNs). BNNs are characterized by having binary weights f 1;+1gand by using the sign function
+for neuron activation [74]. In [140], a MIP is proposed for nding adversarial examples in BNNs by maximizing
+the dierence between the activation of the targeted label 0and the predicted label of the input x0, in
+the nal layer (namely, max xL
+0 xL
+). Contrary to [97], the MIP of [140] does not impose limitations on the
+search of adversarial examples, apart from the perturbation quantity. In terms of optimality criterion however,
+searching for the proven largest misclassied example is dierent from nding a targeted adversarial example.
+Furthermore, while there is interest in minimally perturbed adversarial examples, suboptimal solutions corre-
+sponding to adversarial examples (i.e., xL
+0xL
+) may have a perturbation smaller than that of the optimal
+solution. Recently, [125] investigated a hybrid constraint programming/mixed integer programming method
+to train BNNs. Such model-based approach provides solutions that generalize better than those found by the
+largely adopted training solvers, such as gradient descent, especially for small datasets. We note that methods
+such as gradient descent can usually only guarantee local optimality (unless early stopping takes place).
+Besides [97], other MIP frameworks have been proposed to model certain properties of neural networks
+in a bounded input domain. In [65], the problem of computing maximum perturbation bounds for DNNs is
+formulated as a MIP, where indicator constraints and disjunctive constraints are modeled using constraints
+with big-M coecients [111]. The maximum perturbation bound is a threshold such that the perturbed input
+may be classied correctly with a high probability. A restrictive misclassication condition is added when
+formulating the MIP. Hence, the infeasibility of the MIP does not certify the absence of adversarial examples.
+In addition to the ReLU activation, the tan 1function is also considered by introducing quadratic constraints
+and several heuristics are proposed to solve the resulting problem. In [206], a model to formally measure the
+vulnerability to adversarial examples is proposed (the concept of vulnerability of neural networks is discussed in
+20more details in Sections 7.1 and 7.2). A tight formulation for the resulting nonlinearities and a novel presolve
+technique are introduced to limit the number of binary variables and improve the numerical conditioning.
+However, the misclassication condition of adversarial examples is not explicitly dened but is rather left in
+the form \dierent from" and not explicitly modeled using equality/inequality constraints. In [193], the aim
+is to count or bound the number of linear regions that a piecewise linear classier represented by a DNN
+can attain. Assuming that the input space is bounded and polyhedral, the DNN is modeled as a MIP. The
+contributions of adopting a MIP framework in this context are limited, especially in comparison with the
+computational results achieved in [170].
+MIP frameworks can also be used to formulate the verication problem for neural networks as a satisability
+problem. In [134], a satisability modulo theory solver is proposed based on an extension of the simplex method
+to accommodate the ReLU activation functions. In [48], a branch-and-bound framework for verifying piecewise-
+linear neural networks is introduced. For a recent survey on the approaches for automated verication of NNs,
+the reader is referred to [153].
+6.2 Activation Ensembles
+Another research direction in neural network architectures investigates the possibility of adopting multiple
+activation functions inside the layers of a neural network, to increase the accuracy of the classier. Some
+examples in this framework are given by the maxout units [110], returning the maximum of multiple linear
+ane functions, and the network-in-network paradigm [156] where the ReLU activation function is replaced
+by fully connected network. In [1], adaptive piecewise linear activation functions are learned when training
+each neuron. Specically, for each unit iand valuez, activation i(z) is considered as
+i(z) = max(0;z) +SX
+s=1as
+imax(0; z+bs
+i); (95)
+where the number of hinges Sis a hyperparameter to be xed before training, while the variables as
+i;bs
+ihave
+to be learned. Functions igeneralize the ReLU function (rst term of (95)), and can approximate a class of
+continuous piecewise-linear functions, for large enough S[1].
+In a more general perspective, ensemble layers are proposed in [142] to consider multiple activation functions
+in a neural network. The idea is to embed a family of activation functions f1;:::; mgand let the network
+itself choose the magnitude of their activation for each neuron iduring the training. To promote relatively
+equal contribution to learning, the activation functions need to be scaled to the interval [0 ;1]. In order to
+measure the impact of the activation in the neural network, each function jis associated with a continuous
+variablej. The resulting activation ifor neuroniis then given by
+i(z) =mX
+j=1j
+ij(z) min
+x2X(j(zx;i))
+max
+x2X(j(zx;i)) min
+x2X(j(zx;i)) +; (96)
+wherezx;iis the output of neuron iassociated with training example x,Xis the set of training observations,
+andis a small tolerance. Equation (96) is a weighted sum of the scaled jfunctions, which is integrated
+in the training of the DNN architecture. The min and max in (96) can be approximated on a minibatch of
+observations in X, in the testing phase. In order to impose the selection of functions j, the magnitude of
+the weights jis limited in a projection subproblem, where for each neuron the network should choose an
+activation function and therefore all jshould sum to 1. If ^ jare the weight values obtained by gradient
+descent while training, then the projected weights are found by solving the convex quadratic programming
+problem
+minmX
+j=11
+2(j ^j)2(97)
+s.t.mX
+j=1j= 1; (98)
+j08j= 1;:::;m; (99)
+which can be solved in closed form via the Karush-Kuhn-Tucker (KKT) conditions.
+217 Adversarial Learning
+Despite the wide adoption of Machine Learning models in real-world applications, their integration into safety
+and security related use cases still necessitates thorough evaluation and research. A large number of contribu-
+tions in the literature pointed out the dangers caused by perturbed examples, also called adversarial examples ,
+causing classication errors [35, 201]. Malicious attackers can thus exploit security falls in a general classier.
+In case the attacker has a perfect knowledge of the classier's architecture (i.e., the result of the training phase),
+then a white-box attack can be performed. Black-box attacks are instead performed without full information
+of the classier. The interest in adversarial examples is also motivated by the transferability of the attacks to
+dierent trained models [148, 208]. Adversarial learning then emerges as a framework to devise vulnerability
+attacks for classication models [160].
+From a mathematical perspective, such security issues have been formerly expressed via min-max approaches
+where the learner's and the attacker's loss functions are antagonistic [82, 106, 150]. Non-antagonistic losses
+are formulated as a Stackelberg equilibrium problem involving a bilevel optimization formulation [47], or in a
+Nash equilibrium approach [46]. These theoretical frameworks rely on the assumption of expressing the actual
+problem constraints in a game-theory setting, which is often not a viable option for real-life applications.
+The search for adversarial examples can also be used to evaluate the eciency of Generative Adversarial
+Networks (GANs) [109]. A GAN is a minmax two-player game where a generative model Gtries to reproduce
+the training data distribution and a discriminative model Destimates the probability of detecting samples
+coming from the true training distribution, rather than G. The game terminates at a saddle point, which is
+a minimum with respect to a player's strategy and a maximum for the other player's strategy. Discriminative
+networks can be aected by the presence of adversarial examples because the specic inputs to the classication
+networks are not considered in GANs training.
+Adversarial attacks on the test set can be conducted in a targeted or untargeted fashion [53]. In the targeted
+setup, the attacker aims to achieve a classication with a chosen target class (discussed in Section 7.1), while the
+untargeted misclassication is not constrained to achieve a specic class (Section 7.2). The robustness of DNNs
+to adversarial attacks is discussed in Section 7.3. Finally, data poisoning attacks are described in Section 7.4.
+While the majority of the cited papers of the present section refer to DNN applications, adversarial learning
+can, in general, be formulated for classiers with quantitative classes, such as those discussed in Section 3.
+7.1 Targeted attacks
+Given a neural network classier f: Rp!, an input x2 with labely2, and a target label y02,
+a targeted attack consists of a perturbation rsuch thatf(x+r) =y0. This corresponds to nding an input
+\close" tox, which is misclassied by f. Clearly, if the target y0coincides with y, the problem has the trivial
+solutionr= 0 and no misclassication takes place.
+The minimum adversarial problem for targeted attacks consists of nding a perturbation rby solving
+min
+r2Rpkrk2 (100)
+s.t.f(x+r) =y0; (101)
+x+r2 : (102)
+The condition (102) ensures that the perturbed example x+rbelongs to the set of admissible inputs. The
+diculty of solving problem (100){(102) to optimality depends on the complexity of the classier f, and the set
+ of feasible inputs. In general, it is computationally challenging to nd an optimal solution to the problem,
+especially in the case of neural networks.
+For classication of normalized images with binary pixel values, [201] introduces the box-constrained ap-
+proximation
+min
+r2Rpcjrj+L(x+r;y0) (103)
+s.t.x+r2[0;1]p; (104)
+whereL: !R+denotes the loss function for training f(e.g., cross-entropy). The approximation is exact
+for convex loss functions, and can be solved via a line search algorithm on c>0. For a xed c, the formulation
+can be tackled by the box-constrained version of the Limited-memory Broyden{Fletcher{Goldfarb{Shanno (L-
+BFGS) method [49]. In [112], cis xed such that the perturbation is minimized on a suciently large subset
+X0of data points, and the mean prediction error rate of f(xi+ri);xi2X0is greater than a threshold. In [53],
+22the 2-norm in (100) is generalized to the l-norm with l2f0;2;1gand an alternative formulation is introduced
+which includes functions Fin the objective where f(x+r) =y0is satised if and only if F(x+r)0. The
+equivalent formulation is then
+min
+r2Rpkrkl+ F(x+r) (105)
+s.t.x+r2 ; (106)
+where  is a constant that can be determined by binary search such that the solution rsatises the condition
+F(x+r)0. For the case where (106) are box constraints similar to (104), the authors propose strategies for
+applying optimization algorithms such as Adam [141]. Novel classes of attacks are identied for the considered
+metrics.
+7.2 Untargeted attacks
+In untargeted attacks, one searches for adversarial examples x0close to the original input xwith labelyfor
+which the classied label y0ofx0is dierent from y, without targeting a specic label for x0. Given that the
+only aim is misclassication, untargeted attacks are deemed less powerful than the targeted counterpart, and
+received less attention in the literature.
+A mathematical formulation for nding minimum adversarial distortion for untargeted attacks is proposed
+in [206]. Assuming that the output values of classier fare expressed by the functions fy0associated with
+labelsy02 (i.e.,fy0are the scoring functions), and a distance metric dis given, then a minimum perturbation
+rfor an untargeted attack is found by solving
+min
+r2Rpd(r) (107)
+s.t. arg max
+y02ffy0(x+r)g6=y; (108)
+x+r2 : (109)
+This formulation can easily accommodate targeted attacks in a set T63yby replacing (108) with arg maxy0ffy0(x+
+r)g2T. The most commonly adopted metrics in the literature are the 1, 2, and 1-norm, which can all be ex-
+pressed with continuous variables, as shown in [206]. The 2-norm makes the objective function of the outer-level
+optimization problem quadratic.
+In order to express the logical constraint (108) in a mathematical programming formulation, problem
+(107){(109) can be cast as the bilevel optimization problem
+min
+r2Rp;z2d(r) (110)
+s.t.z y +Ms; (111)
+z y (1 s)M; (112)
+z2arg max
+y02ffy0(x+r)g; (113)
+x+r2 ; (114)
+s2f0;1g; (115)
+where>0 is a small constant, zis a decision variable representing the classied label, Mis a big-M coecient,
+andsis a binary variable that enforces one of the constraints (111){(112) which express the condition of
+misclassication z6=y. The complexity of the inner-level optimization problem is dependent on the scoring
+functions. Given that the upper-level feasibility set  is typically continuous and the lower-level variable y0
+ranges on a discrete set, the problem is in fact a continuous discrete bilevel programming problem [93] with
+convex quadratic function [90], which requires dedicated reformulations or approximations [64, 113, 130].
+We introduce an alternative mathematical formulation for nding untargeted adversarial examples satisfying
+condition (108). A perturbed input x0=x+rfor a sample xclassied with label y2 is an untargeted
+adversarial example if the classied label of x0is dierent from y. This condition is equivalent to
+9y02nfygs.t.fy0(x0)>fy(x0): (116)
+23Condition (116) is an existence condition, which can be formalized by introducing the functions ~ y0(r) =
+ReLU (fy0(x+r) fy(x+r)),y02nfyg, and the condition
+X
+y02nfyg~y0(r)>; (117)
+where parameter  >0 enforces that at least one ~ y0function has to be activated for a perturbation r. Therefore,
+untargeted adversarial examples can be found from formulation (107){(109) by replacing condition (108) with
+the linear condition (117) and adding jj 1 functions ~ y0(r). The complexity of this approach depends on the
+scoring functions fy0. The extra ReLU functions ~can be expressed as a mixed integer formulation as done in
+problem (89){(94).
+7.3 Adversarial robustness
+Another interesting line of research motivated by adversarial learning deals with adversarial training, which
+consists of techniques to make a neural network robust to adversarial attacks. The problem of measuring the
+robustness of a neural network is formalized in [17]. The pointwise robustness evaluates if the classier fonx
+is robust for \small" perturbations. Formally, fis said to be ( x;)-robust if
+y0=y;8x0s.t.kx0 xk1: (118)
+Then, the pointwise robustness (f;x) is the minimum for whichffails to be ( x;)-robust:
+(f;x) = inff0jfis not (x;)-robustg: (119)
+As detailed in [17], is computed by expressing (119) as a constraint satisability problem. By imposing a
+bound on the perturbation, an estimation of the pointwise robustness can be performed by solving a MIP [65].
+A widely known defense technique is to augment the training data with adversarial examples; this however
+does not oer robustness guarantees on novel kinds of attacks. The adversarial training of neural network via
+robust optimization is investigated in [162]. In this setting, the goal is to train a neural network to be resistant
+to all attacks belonging to a certain class of perturbations. Particularly, the adversarial robustness with a
+saddle point (min-max) formulation is studied in [162] which is obtained by augmenting the Empirical Risk
+Minimization paradigm.
+Let2Rpbe the set of model parameters to be learned, and L(;x;y) be the loss function considered in
+the training phase (e.g., the cross-entropy loss) for training examples x2Xand labelsy2, and letSbe
+the set of allowed perturbations (e.g., an L1ball). The aim is to minimize the worst expected adversarial loss
+on the set of inputs perturbed by S
+min
+E(x;y)h
+max
+r2SL(;x+r;y)i
+; (120)
+where the expectation value is computed on the distribution of the training samples. The saddle point problem
+(120) is viewed as the composition of an inner maximization and an outer minimization problem. The inner
+problem corresponds to attacking a trained neural network by means of the perturbations S. The outer
+problem deals with the training of the classier in a robust manner. The importance of formulation (120)
+stems both from the formalization of adversarial training and from the quantication of the robustness given
+by the objective function value on the chosen class of perturbations. To nd solutions to (120) in a reasonable
+time, the structure of the local minima of the loss function can be explored.
+Another robust training approach consists of optimizing the model parameters with respect to worst-case
+data [194]. This is formalized by introducing a perturbation set Sxfor each training example x. The aim is
+then to optimize
+min
+X
+x2Xmax
+r2SxL(;x+r;y): (121)
+An alternating ascent and descent steps procedure can be used to solve (121) with the loss function approxi-
+mated by the rst-order Taylor expansion around the training points.
+247.4 Data Poisoning
+A popular class of attacks for decreasing the training accuracy of classiers is that of data poisoning, which
+was rst studied for SVMs [36]. A data poisoning attack consists of hiding corrupted, altered or noisy data in
+the training dataset. In [200], worst-case bounds on the ecacy of a class of causative data poisoning attacks
+are studied. The causative attacks [15] proceed as follow:
+•a clean training dataset   Cwithndata points drawn by a data-generating distribution is generated
+•the attacker adds malicious examples   Mto  C, to let the defender (learner) learn a bad model
+•the defender learns model with parameters ^from the full dataset   =   C[ M, reporting a test loss
+L(^).
+Data poisoning can be viewed as a game between the attacker and the defender players, where the defender
+wants to minimize L(^), and the attacker seeks to maximize it. As discussed in [200], data sanitization defenses
+to limit the increase of test loss L(^) include two steps: (i) data cleaning (e.g., removing outliers which are
+likely to be poisoned examples), to produce a feasible dataset  0, and (ii) minimizing a margin-based loss on
+the cleaned dataset   \ 0. The learned model is then ^= arg min2L(;  \ 0).
+Poisoning attacks can also be performed in semi-online oronline fashion, where training data is processed in
+a streaming manner, and not in xed batches (i.e., oine). In the semi-online context, the attacker can modify
+part of the training data stream so as to maximize the classication loss, and the evaluation of the objective
+(loss) is done only at the end of the training. In the fully-online scenario, the classier is instead updated and
+evaluated during the training process. In [218], a white-box attacker's behavior in online learning for a linear
+classierwTx(e.g., SVM with binary labels y2f  1;+1g) is formulated. The attacker knows the order in
+which the training data is processed by the learner. The data stream Sarrives inTinstants (S=fS1;:::;STg,
+withSt= (Xt;yt)) and the classication weights are updated using an online gradient descent algorithm [227]
+such thatwt+1=wt t(rL(wt;(xt;yt))) +r
+(wt);where 
+ is a regularization function, tis the step length
+of the iterate update, and Lis a convex loss function. Let  ;
+Tbe the cleaned dataset at time T(which can be
+obtained, for instance, via the sphere and slab defenses), Ube a given upper bound on the number of changed
+examples in   due to data sanitization, gbe the attacker's objective (e.g., classication error on the test set),
+jjbe the cardinality of a set. The semi-online attacker optimization problem can then be formulated as
+max
+S2 0
+Tg(wT) (122)
+s.t.jfSn gjU; (123)
+wt=w0 t 1X
+=0(rL(!;S) +rL(w));1tT: (124)
+Compared to the oine case, the weights wtto be learned are a complex function of the data stream S,
+which makes the gradient computation more challenging and the KKT conditions do not hold. The optimization
+problem can be simplied by considering a convex surrogate for the objective function, given by the logistic loss.
+In addition, the expectation is conducted over a separate validation dataset and a label inversion procedure is
+implemented to cope with the multiple local maxima of the classier function. The fully-online case can also
+be addressed by replacing objective (122) withTX
+t=1g(wt):
+8 Emerging Paradigms
+8.1 Machine Teaching
+In all Machine Learning tasks discussed so far, the size of the training set of the machine learning models
+has been considered as a hyperparameter. The Teaching Dimension problem identies the minimum size of a
+training set to correctly teach a model [107, 196]. The teaching dimension of linear learners, such as Ridge
+regression, SVM, and logistic regression has been recently discussed in [157]. With the intent to generalize
+the teaching dimension problem to a variety of teaching tasks, [225] and [226] provide the Machine Teaching
+framework. Machine Teaching is essentially an inverse problem to Machine Learning. While in a learning task,
+the training dataset   = ( X;y) is given and the model parameters =have to be determined, the role of a
+teacher is to let a learner approximately learn a given model by providing a proper set   of training examples
+25(also called teaching dataset in this context). A Machine Teaching task requires to select: i) a Teaching Risk TR
+expressing the error of the learner, with respect to model ; ii) a Teaching Cost TC expressing the convenience
+of the teaching dataset, from the prospective of the teacher, weighted by a regularization factor ; iii) a learner
+L.
+Formally, machine teaching can be cast as a bilevel optimization problem
+min
+ ;TR() +TC( ) (125)
+s.t.= L( ): (126)
+The upper optimization is the teacher's problem and the lower optimization L( ) is the learner's machine
+learning problem. The teacher is aware of the learner, which could be a classier (such as those of Section 3) or
+a deep neural network. Machine teaching encompasses a wide variety of applications, such as data poisoning
+attacks, computer tutoring systems, and adversarial training.
+Problem (125){(126) is, in general, challenging to solve. However, for certain convex learners, one can
+replace the lower problem by the corresponding KKT conditions, and reduce the problem to a single level
+formulation. The teacher is typically optimizing over a discrete space of teaching sets, hence, for some problem
+instances, the submodularity properties of the problem may be explored. For problems with a small teaching
+set, it is possible to formulate the teaching problem as a mixed integer nonlinear program. The computation of
+the optimal training set remains, in general, an open problem, and is especially challenging in the case where
+the learning algorithm does not have a closed-form solution with respect to the training set [225].
+The minimization of teaching cost can be directly enforced in the constrained formulation
+min
+ ;TC( ) (127)
+s.t. TR(); (128)
+= L( ); (129)
+which allows for either approximate or exact teaching. Alternatively, given a teaching budget B, the learning
+is performed via the constrained formulation
+min
+ ;TR() (130)
+s.t. TC( )B; (131)
+= L( ): (132)
+Other variants consider multiple learners to be taught by the same teacher (i.e., common teaching set). The
+teacher can aim to optimize for the worst learner (minimax risk), or the average learner (Bayes risk). For the
+teaching dimension problem, the teaching cost is the cardinality of the teaching dataset, namely its 0-norm.
+If the empirical minimization loss Lis guiding the learning process, and is the regularization weight, then
+teaching dimension problem can be formulated as
+min
+ ;^k k0 (133)
+s.t.k^ k2
+2; (134)
+^2argmin2X
+x2XL(;x) +kk2
+2: (135)
+Machine teaching approaches tailored to specic learners have also been explored in the literature. In [223],
+a method is proposed for the Bayesian learners, while [180] focuses on Generalized Context Model learners.
+In [165], the bilevel optimization of machine teaching is explored to devise optimal data poisoning attacks for
+a broad family of learners (i.e., SVM, logistic regression, linear regression). The attacker seeks the minimum
+training set poisoning to attack the learned model. By using the KKT conditions of the learner's problem, the
+bilevel formulation is turned into a single level optimization problem.
+8.2 Empirical Model Learning
+Empirical model learning (EML) aims to integrate machine learning models in combinatorial optimization in
+order to support decision-making in high-complexity systems through prescriptive analytics. This goes beyond
+26the traditional what-if approaches where a predictive model (e.g., a simulation model) is used to estimate the
+parameters of an optimization model. A general framework for an EML approach is provided in [159] and
+requires the following:
+•A vectorofndecision variables i, withifeasible over the domain Di.
+•A mathematical encoding hof the Machine Learning model.
+•A vectorzof observables obtained from h.
+•Logical predicates gj(;z) such as mathematical programming inequalities or combinatorial restrictions
+in constraint programming.
+•A cost function f(;z).
+EML then solves the following optimization problem
+minf(;z) (136)
+s.t.gj(;z)8j2J; (137)
+z=h(); (138)
+i2Di8i= 1;:::;n: (139)
+The combinatorial structure of the problem is dened by (136), (137), and (139) while (138) embeds the
+empirical machine learning model in the combinatorial problem. Embedding techniques for neural networks
+and decision trees are presented in [159] using optimization approaches that include mixed integer nonlinear
+programming, constraint programming, and SAT Modulo Theories, and local search.
+8.3 Bayesian Network Structure Learning
+Bayesian networks are a class of models that represent cause-eect relationships. These networks are learned
+by deriving the causal relationships from data. A Bayesian network is visually represented as a direct acyclic
+graphG(N;E ) where each of the nodes in Ncorresponds to one variable and the edges Eare directional
+relations that indicate the cause and eect relationships among the variables. A conditional probability distri-
+bution is associated with every node/variables and along with the network structure expresses the conditional
+dependencies among all the variables. A main challenge in learning Bayesian networks is learning the net-
+work structure from the data. This is known as the Bayesian network structure learning problem. Finding
+the optimal Bayesian network structure is NP-hard [66]. Mixed integer programming formulations of the
+Bayesian network structure learning have been proposed [14] and solved by using relaxations [127], cutting
+planes [16, 52, 78], and heuristics [102, 222].
+The case of learning Bayesian network structures when the width of the tree is bounded by a small constant
+is computationally tractable [177, 179]. The bounded tree-width case is thus a restriction on the Bayesian
+network structure that limits the ability to represent exactly the underlying distribution of the data with the
+aim to achieve reasonable computational performance when computing the network structure. Following [177],
+to formulate the Bayesian network structure learning problem with a maximum tree-width w, the following
+binary variables are dened
+pit=(
+1 ifPitis the parent set of node i
+0 otherwise
+wherei2NandPitis a parent set for node i. For each node i, the collection of parent sets is denoted as Pi
+and is assumed to be available (i.e., enumerated beforehand). Thus Pit2Piwitht= 1;:::;ri, andri=jPij
+wherePiN. Additional auxiliary variables zi2[0;jNj],vi2[0;jNj] wherejNjdenotes the number of nodes
+inN, andyij2f0;1gare introduced to enforce the tree-width and directed acyclic graph conditions. The
+problem is formulated as
+maxX
+i2NriX
+t=1pitsi(Pit) (140)
+s.t.X
+j2Nyijw;8i2N; (141)
+(jNj+ 1)yijjNj+zj zi8i;j2N; (142)
+27yij+yik yjk ykj18i;j;k2N; (143)
+riX
+t=1pit= 18i2N; (144)
+(jNj+ 1)pitjNj+vj vi8i2N;8t= 1;:::;ri;8j2Pit; (145)
+pityij+yji8i2N;8t= 1;:::;ri;8j2Pit; (146)
+pityjk+ykj8i2N;8t= 1;:::;ri;8j;k2Pit; (147)
+zi2[0;jNj]; vi2[0;jNj]; yij2f0;1g; pit2f0;1g 8i;j2N;8t= 1;:::;ri: (148)
+The objective function (140) maximizes the score of the acyclic graph where si() is a score function that can
+be eciently computed for every node i2N[52]. Constraints (141){(143) enforce a maximum tree-width w
+while constraints (144){(145) enforce the directed acyclic graph condition. Constraints (146){(147) enforce the
+relationship between the pandyvariables and nally constraints (148) set the variable bounds and binary
+conditions. Another formulation for the bounded tree-width problem has been proposed in [179] and includes
+an exponential number of constraints which are separated in a branch-and-cut framework. Both formulations
+however become computationally demanding as the number of features in the data set grows and with an
+increase in the tree-width limit. Several search heuristics have also been proposed as solution approaches
+[177, 176, 190].
+9 Conclusions
+Mathematical programming constitutes a fundamental aspect of many machine learning models where the
+training of these models is a large scale optimization problem. This paper surveyed a wide range of machine
+learning models namely regression, classication, clustering, and deep learning as well as the new emerg-
+ing paradigms of machine teaching and empirical model learning. The important mathematical optimization
+models for expressing these machine learning models are presented and discussed. Exploiting the large scale
+optimization formulations and devising model specic solution approaches is an important line of research par-
+ticularly beneting from the maturity of commercial optimization software to solve the problems to optimality
+or to devise eective heuristics. However, as highlighted in [155, 184], providing quantitative performance
+bounds remains an open problem. The nonlinearity of the models, the associated uncertainty of the data, as
+well as the scale of the problems represent some of the very important and compelling challenges to the math-
+ematical optimization community. Furthermore, bilevel formulations play a big role in adversarial learning
+[116], including adversarial training, data poisoning and neural network robustness.
+Based on this survey, we summarize the distinctive features and the potential open machine learning
+problems that may benet from the advances in computational optimization.
+•Regression. The typical approaches to avoid overtting and to handle uncertainty in the data include
+shrinkage methods and dimension reduction. These approaches can all be posed as mathematical pro-
+gramming models. General non-convex regularization to enforce sparsity without incurring shrinkage and
+bias (such as in lasso and ridge regularization) remain computationally challenging to solve to optimality.
+Investigating tighter relaxations and exact solution approaches continue to be an active line of research
+[7].
+•Classication. Classication problems can also be naturally formulated as optimization problems.
+Support vector machines in particular have been well studied in the optimization literature. Similar to
+regression, classier sparsity is one important approach to avoid overtting. Additionally, exploiting the
+kernel tricks is key as nonlinear separators are obtained without additional complexity. However, when
+posed as an optimization problem, it is still unclear how to exploit kernel tricks in sparse SVM optimiza-
+tion models. Another advantage to express machine learning problems as optimization problems and in
+particular classication problems is to account for inaccuracies in the data. Handling data uncertainty is
+a deeply explored eld in the optimization literature and several practical approaches have been presented
+to handle uncertainty through robust and stochastic optimization. Such advances in the optimization
+literature are currently being investigated to improve over the standard approaches [29].
+•Clustering. Clustering problems are in general formulated as MINLPs that are hard to solve to opti-
+mality. The challenges include handling the non-convexity as well as the large scale instances which is
+a challenge even for linear variants such as the capacitated centred clustering (formulated as a binary
+28linear model). Especially for large-scale instances, heuristics are typically devised. Exact approaches for
+clustering received less attention in the literature.
+•DNNs architectures as MIPs . The advantage of mathematical programming approaches to model
+DNNs has only been showcased for relatively small size data sets due to the scale of the underlying
+optimization model. Furthermore, expressing misclassication conditions for adversarial examples in a
+non-restrictive manner, and handling the uncertainty in the training data are open problems in this
+context.
+•Adversarial learning and adversarial robustness. Optimization models for the search for adver-
+sarial examples are important to identify and subsequently protect against novel sets of attacks. The
+complexity of the mathematical models in this context is highly dependent on the the classier func-
+tion. Untargeted attacks received less attention in the literature, and the mathematical programming
+formulation (110){(114) has been introduced in section 7.2. Furthermore, designing models robust to
+adversarial attacks is a two-player game, which can be cast as a bilevel optimization problem. The loss
+function adopted by the learner is one main complexity for the resulting mathematical model and solution
+approaches remain to be investigated.
+•Data poisoning : Similar to adversarial robustness, defending against the poisoning of the training
+data is a two-player game. The case of online data retrieval is especially challenging for gradient-based
+algorithms as the KKT conditions do not hold.
+•Activation ensembles. Activation ensembles seek a trade-o between the classier accuracy and
+computational feasibility of training with a mathematical programming approach. Adopting activation
+ensembles to train large DNNs have not been investigated yet.
+•Machine teaching. Posed as a bilevel optimization problem, one of the challenges in machine teaching
+is to devise computationally tractable single-level formulations that model the learner, the teaching risk,
+and the teaching cost. Machine teaching also generalizes a number of two-player games that are important
+in practice including data poisoning and adversarial training.
+•Empirical model learning. This emerging paradigm can be seen as the bridge combining machine
+learning for parameter estimation and operations research for optimization. As such, theoretical and
+practical challenges remain to be investigated to propose prescriptive analytics models jointly combining
+learning and optimization in practical applications.
+While this survey does not discuss numerical optimization techniques since they were recently reviewed in
+[43, 77, 221], we note the fundamental role of the stochastic gradient algorithm [186] and its variants on large
+scale machine learning. We also highlight the potential impact of machine learning on advancing the solution
+approaches of mathematical programming [95, 96].
+This survey has also focused on the learning process (loss minimization), however we note that challenging
+optimization problems also appear in the inference process, i.e., energy minimization (see [151] for a compre-
+hensive survey). In the inference step, the best output yis chosen from among all possible outputs given
+a certain input xsuch that an \energy function" is minimized. The energy function provides a measure of
+the goodness of a particular conguration of the input and output variables. Energy optimization constitute
+a common framework for machine learning where the training of a model aims at nding the optimal energy
+function.
+A key part of most machine learning approaches is the choice of the hyperparameters of the learning
+model. The Hyperparameter Optimization (HPO) is usually driven by the data scientist's experience and the
+characteristics of the dataset and typically follows heuristic rules or cross-validation approaches. Alternatively,
+the HPO problem can be modeled as a box-constrained mathematical optimization problem [83], or as a
+bilevel optimization problem as discussed in [98, 144, 171], which provides theoretical convergence guarantees
+in addition to computational advantage. Automated approaches for HPO are also an active area of research
+in Machine Learning [26, 92, 220].
+Finally, since the recent widespread of machine learning to several research disciplines and in the mainstream
+industry can be largely attributed to the availability of data and the relatively easy to use libraries, we
+summarize in the online supplement the resources that may be of value for research.
+29Acknowledgement
+We are very grateful to four anonymous referees for their valuable feedback and comments that helped improve
+the content and presentation of the paper. Joe Naoum-Sawaya was supported by NSERC Discovery Grant
+RGPIN-2017-03962 and Bissan Ghaddar was supported by NSERC Discovery Grant RGPIN-2017-04185.
+References
+[1] Forest Agostinelli, Matthew Homan, Peter Sadowski, and Pierre Baldi. Learning activation functions
+to improve deep neural networks. Technical report, arXiv preprint 1412.6830, 2014.
+[2] Md Ashad Alam, Hui-Yi Lin, Hong-Wen Deng, Vince D Calhoun, and Yu-Ping Wang. A kernel machine
+method for detecting higher order interactions in multimodal datasets: Application to schizophrenia.
+Journal of Neuroscience Methods , 309:161{174, 2018.
+[3] Daniel Aloise, Pierre Hansen, and Leo Liberti. An improved column generation algorithm for minimum
+sum-of-squares clustering. Mathematical Programming , 131(1):195{220, 2012.
+[4] Edoardo Amaldi and Stefano Coniglio. A distance-based point-reassignment heuristic for the k-
+hyperplane clustering problem. European Journal of Operational Research , 227(1):22{29, 2013.
+[5] Edoardo Amaldi, Stefano Coniglio, and Leonardo Taccari. Discrete optimization methods to t piecewise
+ane models to data points. Computers & Operations Research , 75:214{230, 2016.
+[6] Yasunori Aoki, Ken Hayami, Hans De Sterck, and Akihiko Konagaya. Cluster Newton method for sam-
+pling multiple solutions of underdetermined inverse problems: application to a parameter identication
+problem in pharmacokinetics. SIAM Journal on Scientic Computing , 36(1):14{44, 2014.
+[7] Alper Atamturk and Andres Gomez. Rank-one convexication for sparse regression. Technical report,
+arXiv preprint 1901.10334, 2019.
+[8] Haldun Aytug. Feature selection for support vector machines using generalized Benders decomposition.
+European Journal of Operational Research , 244(1):210{218, 2015.
+[9] M. Azad and M. Moshkov. Minimization of decision tree depth for multi-label decision tables. In
+Proceedings of the IEEE International Conference on Granular Computing , pages 7{12, 2014.
+[10] M. Azad and M. Moshkov. Classication and optimization of decision trees for inconsistent decision
+tables represented as MVD tables. In Proceedings of the Federated Conference on Computer Science and
+Information Systems , pages 31{38, 2015.
+[11] Mohammad Azad and Mikhail Moshkov. Minimization of decision tree average depth for decision tables
+with many-valued decisions. Procedia Computer Science , 35:368{377, 2014.
+[12] Mohammad Azad and Mikhail Moshkov. Multi-stage optimization of decision and inhibitory trees for
+decision tables with many-valued decisions. European Journal of Operational Research , 263(3):910{921,
+2017.
+[13] Adil M Bagirov and John Yearwood. A new nonsmooth optimization algorithm for minimum sum-of-
+squares clustering problems. European Journal of Operational Research , 170(2):578{596, 2006.
+[14] Mark Barlett and James Cussens. Advances in Bayesian network learning using integer programming.
+InProceedings of the Conference on Uncertainty in Articial Intelligence , pages 182{191, 2013.
+[15] Marco Barreno, Blaine Nelson, Anthony D. Joseph, and J. Doug Tygar. The security of machine learning.
+Machine Learning , 81(2):121{148, 2010.
+[16] Mark Bartlett and James Cussens. Integer linear programming for the Bayesian network structure
+learning problem. Articial Intelligence , 244:258{271, 2017.
+30[17] Osbert Bastani, Yani Ioannou, Leonidas Lampropoulos, Dimitrios Vytiniotis, Aditya Nori, and Antonio
+Criminisi. Measuring neural net robustness with constraints. In D. D. Lee, M. Sugiyama, U. V. Luxburg,
+I. Guyon, and R. Garnett, editors, Advances in Neural Information Processing Systems , pages 2613{2621.
+Curran Associates, Inc., 2016.
+[18] Philipp Baumann, D. S. Hochbaum, and Y. T. Yang. A comparative study of the leading machine
+learning techniques and two new optimization algorithms. European Journal of Operational Research ,
+272(3):1041{1057, 2019.
+[19] Peter N Belhumeur, Jo~ ao P Hespanha, and David J Kriegman. Eigenfaces vs. sherfaces: Recognition
+using class specic linear projection. IEEE Transactions on Pattern Analysis & Machine Intelligence ,
+(7):711{720, 1997.
+[20] Stefano Benati and Sergio Garc a. A mixed integer linear model for clustering with variable selection.
+Computers & Operations Research , 43:280{285, 2014.
+[21] Yoshua Bengio, Andrea Lodi, and Antoine Prouvost. Machine learning for combinatorial optimization:
+a methodological tour d'horizon. Technical report, arXiv preprint 1811.06128, 2018.
+[22] Kristin P Bennett. Decision tree construction via linear programming. Technical report, Center for
+Parallel Optimization, Computer Sciences Department, University of Wisconsin, 1992.
+[23] Kristin P. Bennett and J. Blue. Optimal decision trees. Technical report, Rensselaer Polytechnic Institute,
+1996.
+[24] Kristin P Bennett and Olvi L Mangasarian. Robust linear programming discrimination of two linearly
+inseparable sets. Optimization Methods and Software , 1(1):23{34, 1992.
+[25] Kristin P Bennett and Emilio Parrado-Hern andez. The interplay of optimization and machine learning
+research. Journal of Machine Learning Research , 7:1265{1281, 2006.
+[26] James Bergstra and Yoshua Bengio. Random search for hyper-parameter optimization. Journal of
+Machine Learning Research , 13(Feb):281{305, 2012.
+[27] Dimitris Bertsimas and Martin S. Copenhaver. Characterization of the equivalence of robustication and
+regularization in linear and matrix regression. European Journal of Operational Research , 270(3):931{942,
+2018.
+[28] Dimitris Bertsimas and Jack Dunn. Optimal classication trees. Machine Learning , 106(7):1039{1082,
+2017.
+[29] Dimitris Bertsimas, Jack Dunn, Colin Pawlowski, and Ying Daisy Zhuo. Robust classication. INFORMS
+Journal on Optimization , 1(1):2{34, 2019.
+[30] Dimitris Bertsimas and Nathan Kallus. From predictive to prescriptive analytics. Management Science ,
+66(3):1025{1044, 2020.
+[31] Dimitris Bertsimas and Angela King. OR forum{An algorithmic approach to linear regression. Operations
+Research , 64(1):2{16, 2016.
+[32] Dimitris Bertsimas, Angela King, and Rahul Mazumder. Best subset selection via a modern optimization
+lens. The Annals of Statistics , 44(2):813{852, 2016.
+[33] Dimitris Bertsimas and Romy Shioda. Classication and regression via integer optimization. Operations
+Research , 55(2):252{271, 2007.
+[34] Dimitris Bertsimas, Bart Van Parys, et al. Sparse high-dimensional regression: Exact scalable algorithms
+and phase transitions. The Annals of Statistics , 48(1):300{323, 2020.
+[35] Battista Biggio, Giorgio Fumera, and Fabio Roli. Multiple classier systems under attack. In Proceedings
+of the International Workshop on Multiple Classier Systems , pages 74{83, 2010.
+[36] Battista Biggio, Blaine Nelson, and Pavel Laskov. Poisoning attacks against support vector machines.
+InProceedings of the International Conference on Machine Learning , pages 1467{1474, 2012.
+31[37] V ctor Blanco, Justo Puerto, and Rom an Salmer on. Locating hyperplanes to tting set of points: A
+general framework. Computers & Operations Research , 95:172{193, 2018.
+[38] Rafael Blanquero, Emilio Carrizosa, Cristina Molero-Ro, and Dolores Romero Morales. Optimal ran-
+domized classication trees. Technical report, 2018.
+[39] Rafael Blanquero, Emilio Carrizosa, Cristina Molero-R o, and Dolores Romero Morales. Sparsity in
+optimal randomized classication trees. European Journal of Operational Research , 284(1):255{272,
+2020.
+[40] Pierre Bonami, Andrea Lodi, Andrea Tramontani, and Sven Wiese. On mathematical programming with
+indicator constraints. Mathematical Programming , 151(1):191{223, 2015.
+[41] Pierre Bonami, Andrea Lodi, and Giulia Zarpellon. Learning a classication of mixed-integer quadratic
+programming problems. In Proceedings of the International Conference on the Integration of Constraint
+Programming, Articial Intelligence, and Operations Research , pages 595{604, 2018.
+[42] Radu Ioan Bot  and Nicole Lorenz. Optimization problems in statistical learning: Duality and optimality
+conditions. European Journal of Operational Research , 213(2):395{404, 2011.
+[43] L eon Bottou, Frank E. Curtis, and Jorge Nocedal. Optimization methods for large-scale machine learning.
+SIAM Review , 60(2):223{311, 2018.
+[44] Paul Bradley and Olvi Mangasarian. Massive data discrimination via linear support vector machines.
+Optimization Methods and Software , 13(1):1{10, 2000.
+[45] L Breiman, J Friedman, R Olshen, and C Stone. Classication and Regression Trees . Chapman and
+Hall/CRC, London, 1984.
+[46] Michael Br uckner, Christian Kanzow, and Tobias Scheer. Static prediction games for adversarial learn-
+ing problems. Journal of Machine Learning Research , 13:2617{2654, 2012.
+[47] Michael Br uckner and Tobias Scheer. Stackelberg games for adversarial prediction problems. In Pro-
+ceedings of the International Conference on Knowledge Discovery and Data Mining , pages 547{555, 2011.
+[48] Rudy R Bunel, Ilker Turkaslan, Philip Torr, Pushmeet Kohli, and Pawan K Mudigonda. A unied view
+of piecewise linear neural network verication. In S. Bengio, H. Wallach, H. Larochelle, K. Grauman,
+N. Cesa-Bianchi, and R. Garnett, editors, Advances in Neural Information Processing Systems , pages
+4790{4799. Curran Associates, Inc., 2018.
+[49] Richard H Byrd, Peihuang Lu, Jorge Nocedal, and Ciyou Zhu. A limited memory algorithm for bound
+constrained optimization. SIAM Journal on Scientic Computing , 16(5):1190{1208, 1995.
+[50] Sonia Caeri, Alberto Costa, and Pierre Hansen. Reformulation of a model for hierarchical divisive graph
+modularity maximization. Annals of Operations Research , 222(1):213{226, 2014.
+[51] Sonia Caeri, Pierre Hansen, and Leo Liberti. Improving heuristics for network modularity maximization
+using an exact algorithm. Discrete Applied Mathematics , 163:65{72, 2014.
+[52] Cassio P de Campos and Qiang Ji. Ecient structure learning of Bayesian networks using constraints.
+Journal of Machine Learning Research , 12:663{689, 2011.
+[53] Nicholas Carlini and David Wagner. Towards evaluating the robustness of neural networks. In Proceedings
+of the IEEE Symposium on Security and Privacy , pages 39{57, 2017.
+[54] Emilio Carrizosa and Vanesa Guerrero. Biobjective sparse principal component analysis. Journal of
+Multivariate Analysis , 132:151{159, 2014.
+[55] Emilio Carrizosa and Vanesa Guerrero. rs-Sparse principal component analysis: A mixed integer nonlinear
+programming approach with VNS. Computers & Operations Research , 52:349{354, 2014.
+[56] Emilio Carrizosa, Bel en Mart n-Barrag an, and Dolores Romero Morales. Binarized support vector ma-
+chines. INFORMS Journal on Computing , 22(1):154{167, 2010.
+32[57] Emilio Carrizosa, Bel en Mart n-Barrag an, and Dolores Romero Morales. Detecting relevant variables
+and interactions in supervised classication. European Journal of Operational Research , 213(1):260{269,
+2011.
+[58] Emilio Carrizosa, Nenad Mladenovi c, and Raca Todosijevi c. Variable neighborhood search for minimum
+sum-of-squares clustering on networks. European Journal of Operational Research , 230(2):356{363, 2013.
+[59] Emilio Carrizosa and Dolores Romero Morales. Supervised classication and mathematical optimization.
+Computers & Operations Research , 40(1):150{165, 2013.
+[60] Antoni B. Chan, Nuno Vasconcelos, and Gert R. G. Lanckriet. Direct convex relaxations of sparse SVM.
+InProceedings of the International Conference on Machine Learning , pages 145{153, 2007.
+[61] Samprit Chatterjee and Ali S Hadi. Regression analysis by example . John Wiley & Sons, New York,
+2015.
+[62] Antonio Augusto Chaves and Luiz Antonio Nogueira Lorena. Clustering search algorithm for the capac-
+itated centered clustering problem. Computers & Operations Research , 37(3):552{558, 2010.
+[63] Xiaobo Chen, Jian Yang, David Zhang, and Jun Liang. Complete large margin linear discriminant
+analysis using mathematical programming approach. Pattern Recognition , 46(6):1579{1594, 2013.
+[64] Yang Chen and Michael Florian. The nonlinear bilevel programming problem: Formulations, regularity
+and optimality conditions. Optimization , 32(3):193{209, 1995.
+[65] Chih-Hong Cheng, Georg N uhrenberg, and Harald Ruess. Maximum resilience of articial neural net-
+works. In Deepak D'Souza and K. Narayan Kumar, editors, Automated Technology for Verication and
+Analysis , pages 251{268, Cham, 2017. Springer International Publishing.
+[66] David Maxwell Chickering. Learning Bayesian networks is NP-complete. In Learning from Data , pages
+121{130. Springer, 1996.
+[67] Igor Chikalov, Shahid Hussain, and Mikhail Moshkov. Bi-criteria optimization of decision trees with
+applications to data analysis. European Journal of Operational Research , 266(2):689{701, 2018.
+[68] Alexandra Chouldechova and Trevor Hastie. Generalized additive model selection. Technical report,
+arXiv preprint 1506.03850, 2015.
+[69] Wei Chu and S Sathiya Keerthi. Support vector ordinal regression. Neural Computation , 19(3):792{815,
+2007.
+[70] GDH Claassen and Th HB Hendriks. An application of special ordered sets to a periodic milk collection
+problem. European Journal of Operational Research , 180(2):754{769, 2007.
+[71] David Corne, Clarisse Dhaenens, and Laetitia Jourdan. Synergies between operations research and data
+mining: The emerging use of multi-objective approaches. European Journal of Operational Research ,
+221(3):469{479, 2012.
+[72] Salvatore Corrente, Salvatore Greco, Mi losz Kadzi nski, and Roman S lowi nski. Robust ordinal regression
+in preference learning and ranking. Machine Learning , 93(2-3):381{422, 2013.
+[73] Corinna Cortes and Vladimir Vapnik. Support-vector networks. Machine Learning , 20(3):273{297, Sep
+1995.
+[74] Matthieu Courbariaux, Yoshua Bengio, and Jean-Pierre David. Binaryconnect: Training deep neural
+networks with binary weights during propagations. In C. Cortes, N. D. Lawrence, D. D. Lee, M. Sugiyama,
+and R. Garnett, editors, Advances in Neural Information Processing Systems , pages 3123{3131. Curran
+Associates, Inc., 2015.
+[75] Louis Anthony Cox, Yuping Qiu, and Warren Kuehner. Heuristic least-cost computation of discrete
+classication functions with uncertain argument values. Annals of Operations Research , 21(1):1{29,
+1989.
+33[76] John P Cunningham and Zoubin Ghahramani. Linear dimensionality reduction: survey, insights, and
+generalizations. The Journal of Machine Learning Research , 16(1):2859{2900, 2015.
+[77] Frank E. Curtis and Katya Scheinberg. Optimization methods for supervised machine learning: From
+linear models to deep learning. In Leading Developments from INFORMS Communities , pages 89{114.
+INFORMS, 2017.
+[78] James Cussens. Bayesian network learning with cutting planes. In Proceedings of the Conference on
+Uncertainty in Articial Intelligence , pages 153{160, 2011.
+[79] George Cybenko. Approximation by superpositions of a sigmoidal function. Mathematics of Control,
+Signals and Systems , 2(4):303{314, 1989.
+[80] Claudia D'Ambrosio, Andrea Lodi, Sven Wiese, and Cristiana Bragalli. Mathematical programming
+techniques in water network optimization. European Journal of Operational Research , 243(3):774{788,
+2015.
+[81] I.R. de Farias, M. Zhao, and H. Zhao. A special ordered set approach for optimizing a discontinuous
+separable piecewise linear function. Operations Research Letters , 36(2):234{238, 2008.
+[82] Ofer Dekel, Ohad Shamir, and Lin Xiao. Learning to classify with missing and corrupted features.
+Machine Learning , 81(2):149{178, 2010.
+[83] Gonzalo I. Diaz, Achille Fokoue-Nkoutche, Giacomo Nannicini, and Horst Samulowitz. An eective algo-
+rithm for hyperparameter optimization of neural networks. IBM Journal of Research and Development ,
+61(4):9{1, 2017.
+[84] JM Daz-B anez, Juan A Mesa, and Anita Sch obel. Continuous location of dimensional structures. Eu-
+ropean Journal of Operational Research , 152(1):22{44, 2004.
+[85] Chris Ding and Xiaofeng He. K-means clustering via principal component analysis. In Proceedings of the
+International Conference on Machine Learning , page 29, 2004.
+[86] Finale Doshi-Velez and Been Kim. Towards a rigorous science of interpretable machine learning. Technical
+report, arXiv preprint 1702.08608, 2017.
+[87] Stephan Dreiseitl and Lucila Ohno-Machado. Logistic regression and articial neural network classica-
+tion models: a methodology review. Journal of Biomedical Informatics , 35(5-6):352{359, 2002.
+[88] Michelle Dunbar, John M. Murray, Lucette A. Cysique, Bruce J. Brew, and Vaithilingam Jeyaku-
+mar. Simultaneous classication and feature selection via convex quadratic programming with appli-
+cation to HIV-associated neurocognitive disorder assessment. European Journal of Operational Research ,
+206(2):470{478, 2010.
+[89] Francis Y Edgeworth. On observations relating to several quantities. Hermathena , 6(13):279{285, 1887.
+[90] Thomas A Edmunds and Jonathan F Bard. An algorithm for the mixed-integer nonlinear bilevel pro-
+gramming problem. Annals of Operations Research , 34(1):149{162, 1992.
+[91] Bradley Efron, Trevor Hastie, Iain Johnstone, Robert Tibshirani, et al. Least angle regression. The
+Annals of Statistics , 32(2):407{499, 2004.
+[92] Thomas Elsken, Jan Hendrik Metzen, and Frank Hutter. Neural architecture search: A survey. Journal
+of Machine Learning Research , 20(55):1{21, 2019.
+[93] Diana Fangh anel and Stephan Dempe. Bilevel programming with discrete lower level problems. Opti-
+mization , 58(8):1029{1047, 2009.
+[94] Giancarlo Ferrari-Trecate, Marco Muselli, Diego Liberati, and Manfred Morari. A clustering technique
+for the identication of piecewise ane systems. Automatica , 39(2):205{217, 2003.
+[95] Martina Fischetti and Marco Fraccaro. Machine learning meets mathematical optimization to predict
+the optimal production of oshore wind parks. Computers & Operations Research , 106:289{297, 2019.
+34[96] Martina Fischetti, Andrea Lodi, and Giulia Zarpellon. Learning MILP resolution outcomes before reach-
+ing time-limit. In Proceedings of the International Conference on Integration of Constraint Programming,
+Articial Intelligence, and Operations Research , pages 275{291, 2019.
+[97] Matteo Fischetti and Jason Jo. Deep neural networks and mixed integer linear optimization. Constraints ,
+23(3):296{309, 2018.
+[98] Luca Franceschi, Paolo Frasconi, Saverio Salzo, Riccardo Grazzi, and Massimilano Pontil. Bilevel
+programming for hyperparameter optimization and meta-learning. Technical report, arXiv preprint
+1806.04910, 2018.
+[99] Jerome Friedman, Trevor Hastie, and Robert Tibshirani. The Elements of Statistical Learning , volume 1.
+Springer Series in Statistics New York, NY, USA, 2001.
+[100] Keinosuke Fukunaga. Introduction to Statistical Pattern Recognition . Elsevier, 2013.
+[101] K Ganesh and TT Narendran. Cloves: A cluster-and-search heuristic to solve the vehicle routing problem
+with delivery and pick-up. European Journal of Operational Research , 178(3):699{717, 2007.
+[102] Maxime Gasse, Alex Aussem, and Haytham Elghazel. A hybrid algorithm for Bayesian network structure
+learning with application to multi-label learning. Expert Systems with Applications , 41(15):6755{6772,
+2014.
+[103] Manlio Gaudioso, Enrico Gorgone, Martine Labb e, and Antonio M Rodr guez-Ch a. Lagrangian relax-
+ation for SVM feature selection. Computers & Operations Research , 87:137{145, 2017.
+[104] Philippe Gaudreau, Ken Hayami, Yasunori Aoki, Hassan Safouhi, and Akihiko Konagaya. Improvements
+to the cluster Newton method for underdetermined inverse problems. Journal of Computational and
+Applied Mathematics , 283:122{141, 2015.
+[105] Bissan Ghaddar and Joe Naoum-Sawaya. High dimensional data classication and feature selection using
+support vector machines. European Journal of Operational Research , 265(3):993{1004, 2018.
+[106] Amir Globerson and Sam Roweis. Nightmare at test time: robust learning by feature deletion. In
+Proceedings of the International Conference on Machine Learning , pages 353{360, 2006.
+[107] Sally Goldman and Michael Kearns. On the complexity of teaching. Journal of Computer and System
+Sciences , 50(1):20{31, 1995.
+[108] Ian Goodfellow, Yoshua Bengio, Aaron Courville, and Yoshua Bengio. Deep Learning , volume 1. MIT
+Press Cambridge, 2016.
+[109] Ian Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron
+Courville, and Yoshua Bengio. Generative adversarial nets. In Z. Ghahramani, M. Welling, C. Cortes,
+N. D. Lawrence, and K. Q. Weinberger, editors, Advances in Neural Information Processing Systems ,
+pages 2672{2680. Curran Associates, Inc., 2014.
+[110] Ian J. Goodfellow, David Warde-Farley, Mehdi Mirza, Aaron Courville, and Yoshua Bengio. Maxout
+networks. In Proceedings of the International Conference on Machine Learning , pages 1319{1327, 2013.
+[111] Ignacio E. Grossmann. Review of nonlinear mixed-integer and disjunctive programming techniques.
+Optimization and Engineering , 3(3):227{252, 2002.
+[112] Shixiang Gu and Luca Rigazio. Towards deep neural network architectures robust to adversarial examples.
+Technical report, arXiv preprint 1412.5068, 2014.
+[113] Zeynep H G um u s and Christodoulos A Floudas. Global optimization of nonlinear bilevel programming
+problems. Journal of Global Optimization , 20(1):1{31, 2001.
+[114] Oktay G unl uk, Jayant Kalagnanam, Matt Menickelly, and Katya Scheinberg. Optimal decision trees for
+categorical data via integer programming. Technical report, Optimization Online, 2018.
+[115] Isabelle Guyon, Jason Weston, Stephen Barnhill, and Vladimir Vapnik. Gene selection for cancer classi-
+cation using support vector machines. Machine Learning , 46(1-3):389{422, 2002.
+35[116] Jihun Hamm and Yung-Kyun Noh. K-beam subgradient descent for minimax optimization. Technical
+report, arXiv preprint 1805.11640, 2018.
+[117] Pierre Hansen and Brigitte Jaumard. Cluster analysis and mathematical programming. Mathematical
+Programming , 79(1-3):191{215, 1997.
+[118] Sariel Har-Peled, Dan Roth, and Dav Zimak. Constraint classication for multiclass classication and
+ranking. In S. Becker, S. Thrun, and K. Obermayer, editors, Advances in Neural Information Processing
+Systems , pages 809{816. MIT Press, 2003.
+[119] Trevor Hastie and Robert Tibshirani. Generalized additive models. Statistical Science , 1(3):297{310,
+1986.
+[120] Trevor Hastie, Robert Tibshirani, and Ryan J Tibshirani. Extended comparisons of best subset selection,
+forward stepwise selection, and the lasso. Technical report, arXiv preprint 1707.08692, 2017.
+[121] R. Herbrich, T. Graepel, and K. Obermayer. Large margin rank boundaries forordinal regression . MIT
+Press, 2000.
+[122] Ralf Herbrich. Learning Kernel Classiers: Theory and Algorithms . MIT Press, 2001.
+[123] Kurt Hornik. Approximation capabilities of multilayer feedforward networks. Neural Networks , 4(2):251{
+257, 1991.
+[124] Laurent Hyal and Ronald L. Rivest. Constructing optimal binary decision trees is NP-complete. Infor-
+mation Processing Letters , 5(1):15{17, 1976.
+[125] Rodrigo Toro Icarte, Le on Illanes, Margarita P Castro, Andre A Cire, Sheila A McIlraith, and J Christo-
+pher Beck. Training binarized neural networks using MIP and CP. In Proceedings of the International
+Conference on Principles and Practice of Constraint Programming , 2019.
+[126] Alan Julian Izenman. Modern Multivariate Statistical Techniques: Regression, Classication and Mani-
+fold Learning , volume 10 of Springer Texts in Statistics . Springer, 2008.
+[127] Tommi Jaakkola, David Sontag, Amir Globerson, and Marina Meila. Learning Bayesian network struc-
+ture using LP relaxations. In Proceedings of the International Conference on Articial Intelligence and
+Statistics , pages 358{365, 2010.
+[128] Anil K. Jain, M. N. Narasimha Murty, and Patrick J. Flynn. Data clustering: a review. ACM Computing
+Surveys , 31(3):264{323, 1999.
+[129] Gareth James, Daniela Witten, Trevor Hastie, and Robert Tibshirani. An Introduction to Statistical
+Learning , volume 112. Springer, 2013.
+[130] Rong-Hong Jan and Maw-Sheng Chern. Nonlinear integer bilevel programming. European Journal of
+Operational Research , 72(3):574{587, 1994.
+[131] Ian Jollie. Principal component analysis. In International Encyclopedia of Statistical Science , pages
+1094{1096. Springer, 2011.
+[132] Napsu Karmitsa, Adil M. Bagirov, and Sona Taheri. New diagonal bundle method for clustering problems
+in large data sets. European Journal of Operational Research , 263(2):367{379, 2017.
+[133] Andrej Karpathy, George Toderici, Sanketh Shetty, Thomas Leung, Rahul Sukthankar, and Li Fei-Fei.
+Large-scale video classication with convolutional neural networks. In Proceedings of the IEEE conference
+on Computer Vision and Pattern Recognition , pages 1725{1732, 2014.
+[134] Guy Katz, Clark Barrett, David L. Dill, Kyle Julian, and Mykel J. Kochenderfer. Reluplex: An e-
+cient SMT solver for verifying deep neural networks. In Proceedings of the International Conference on
+Computer Aided Verication , pages 97{117, 2017.
+[135] Shuichi Kawano, Hironori Fujisawa, Toyoyuki Takada, and Toshihiko Shiroishi. Sparse principal compo-
+nent regression with adaptive loading. Computational Statistics & Data Analysis , 89:192{203, 2015.
+36[136] Carl T Kelley. Iterative Methods for Optimization . Society for Industrial and Applied Mathematics,
+1999.
+[137] Abolfazl Keshvari. Segmented concave least squares: A nonparametric piecewise linear regression. Eu-
+ropean Journal of Operational Research , 266(2):585{594, 2018.
+[138] Elias B. Khalil, Pierre Le Bodic, Le Song, George Nemhauser, and Bistra Dilkina. Learning to branch
+in mixed integer programming. In Proceedings of the AAAI Conference on Articial Intelligence , pages
+724{731, 2016.
+[139] Elias B. Khalil, Bistra Dilkina, George L. Nemhauser, Shabbir Ahmed, and Yufen Shao. Learning to run
+heuristics in tree search. In Proceedings of the International Joint Conference on Articial Intelligence ,
+pages 659{666, 2017.
+[140] Elias Boutros Khalil, Amrita Gupta, and Bistra Dilkina. Combinatorial attacks on binarized neural
+networks. Technical report, arXiv preprint 1810.03538, 2018.
+[141] Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. Technical report,
+arXiv preprint 1412.6980, 2014.
+[142] Diego Klabjan and Mark Harmon. Activation ensembles for deep neural networks. In Proceeding of the
+IEEE International Conference on Big Data , pages 206{214, 2019.
+[143] Ted D Klastorin. The p-median problem for cluster analysis: A comparative test using the mixture
+model approach. Management Science , 31(1):84{95, 1985.
+[144] Teresa Klatzer and Thomas Pock. Continuous hyper-parameter learning for support vector machines. In
+Proceedings of the Computer Vision Winter Workshop , pages 39{47, 2015.
+[145] Stefan Kramer, Gerhard Widmer, Bernhard Pfahringer, and Michael De Groeve. Prediction of ordinal
+classes using regression trees. Fundamenta Informaticae , 47(1-2):1{13, 2001.
+[146] Mathias Kraus, Stefan Feuerriegel, and Asil Oztekin. Deep learning in business analytics and operations
+research: models, applications and managerial implications. European Journal of Operational Research ,
+281(3):628{641, 2020.
+[147] Alex Krizhevsky, Ilya Sutskever, and Georey E Hinton. Imagenet classication with deep convolutional
+neural networks. In F. Pereira, C. J. C. Burges, L. Bottou, and K. Q. Weinberger, editors, Advances in
+Neural Information Processing Systems , pages 1097{1105. Curran Associates, Inc., 2012.
+[148] Alexey Kurakin, Ian Goodfellow, and Samy Bengio. Adversarial machine learning at scale. Technical
+report, arXiv preprint 1611.01236, 2016.
+[149] Renata Krystyna Kwatera and Bruno Simeone. Clustering heuristics for set covering. Annals of Opera-
+tions Research , 43(5):295{308, 1993.
+[150] Gert R. G. Lanckriet, Laurent El Ghaoui, Chiranjib Bhattacharyya, and Michael I. Jordan. A robust
+minimax approach to classication. Journal of Machine Learning Research , 3:555{582, 2002.
+[151] Yann LeCun, Sumit Chopra, Raia Hadsell, Marc Aurelio Ranzato, and Fu Jie Huang. A tutorial on
+energy-based learning . MIT Press, 2006.
+[152] Yann LeCun et al. Generalization and network design strategies. Connectionism in Perspective , 19:143{
+155, 1989.
+[153] Francesco Leofante, Nina Narodytska, Luca Pulina, and Armando Tacchella. Automated verication of
+neural networks: Advances, challenges and perspectives. Technical report, arXiv preprint 1805.09938,
+2018.
+[154] Mark Lewis, Haibo Wang, and Gary Kochenberger. Exact solutions to the capacitated clustering problem:
+A comparison of two models. Annals of Data Science , 1(1):15{23, 2014.
+37[155] Tengyuan Liang, Tomaso Poggio, Alexander Rakhlin, and James Stokes. Fisher-Rao metric, geometry,
+and complexity of neural networks. In Proceeding of the International Conference on Articial Intelligence
+and Statistics , pages 888{896, 2019.
+[156] Min Lin, Qiang Chen, and Shuicheng Yan. Network in network. Technical report, arXiv preprint
+1312.4400, 2013.
+[157] Ji Liu and Xiaojin Zhu. The teaching dimension of linear learners. The Journal of Machine Learning
+Research , 17(1):5631{5655, 2016.
+[158] Andrea Lodi and Giulia Zarpellon. On learning and branching: a survey. TOP , 25(2):207{236, 2017.
+[159] Michele Lombardi, Michela Milano, and Andrea Bartolini. Empirical decision model learning. Articial
+Intelligence , 244:343{367, 2017.
+[160] Daniel Lowd and Christopher Meek. Adversarial learning. In Proceedings of the International Conference
+on Knowledge Discovery in Data Mining , pages 641{647, 2005.
+[161] James MacQueen. Some methods for classication and analysis of multivariate observations. In Proceed-
+ings of the Berkeley Symposium on Mathematical Statistics and Probability , pages 281{297, 1967.
+[162] Aleksander Madry, Aleksandar Makelov, Ludwig Schmidt, Dimitris Tsipras, and Adrian Vladu. Towards
+deep learning models resistant to adversarial attacks. Technical report, arXiv preprint 1706.06083, 2017.
+[163] Feng Mai, Michael J. Fry, and Jerey W. Ohlmann. Model-based capacitated clustering with posterior
+regularization. European Journal of Operational Research , 271(2):594{605, 2018.
+[164] Sebasti an Maldonado, Juan P erez, Richard Weber, and Martine Labb e. Feature selection for support
+vector machines via mixed integer linear programming. Information Sciences , 279:163{175, 2014.
+[165] Shike Mei and Xiaojin Zhu. Using machine teaching to identify optimal training-set attacks on machine
+learners. In Proceedings of the AAAI Conference on Articial Intelligence , pages 2871{2877, 2015.
+[166] Paul W Mielke and Kenneth J Berry. Permutation-based multivariate regression analysis: The case for
+least sum of absolute deviations regression. Annals of Operations Research , 74:259, 1997.
+[167] Alan Miller. Subset Selection in Regression . Chapman and Hall/CRC, 2002.
+[168] Velibor V Mi si c. Optimization of tree ensembles. Operations Research (In press) , 2020.
+[169] Ryuhei Miyashiro and Yuichi Takano. Mixed integer second-order cone programming formulations for
+variable selection in linear regression. European Journal of Operational Research , 247(3):721{731, 2015.
+[170] Guido Mont ufar. Notes on the number of linear regions of deep neural networks. Technical report, Max
+Planck Institute for Mathematics in the Sciences, 2017.
+[171] Gregory Moore, Charles Bergeron, and Kristin P Bennett. Model selection for primal SVM. Machine
+Learning , 85(1-2):175{208, 2011.
+[172] Michael J. Mortenson, Neil F. Doherty, and Stewart Robinson. Operational research from taylorism
+to terabytes: A research agenda for the analytics age. European Journal of Operational Research ,
+241(3):583{595, 2015.
+[173] John M Mulvey and Harlan P Crowder. Cluster analysis: An application of Lagrangian relaxation.
+Management Science , 25(4):329{340, 1979.
+[174] Balas Kausik Natarajan. Sparse approximate solutions to linear systems. SIAM Journal on Computing ,
+24(2):227{234, 1995.
+[175] Marcos Negreiros and Augusto Palhano. The capacitated centred clustering problem. Computers &
+Operations Research , 33(6):1639{1663, 2006.
+[176] Siqi Nie, Cassio P De Campos, and Qiang Ji. Learning bounded tree-width Bayesian networks via sam-
+pling. In Proceedings of the European Conference on Symbolic and Quantitative Approaches to Reasoning
+and Uncertainty , pages 387{396. Springer, 2015.
+38[177] Siqi Nie, Denis D Mau a, Cassio P De Campos, and Qiang Ji. Advances in learning Bayesian networks of
+bounded treewidth. In Advances in Neural Information Processing Systems , pages 2285{2293, 2014.
+[178] Sigurdur Olafsson, Xiaonan Li, and Shuning Wu. Operations research and data mining. European Journal
+of Operational Research , 187(3):1429 { 1448, 2008.
+[179] Pekka Parviainen, Hossein Shahrabi Farahani, and Jens Lagergren. Learning bounded tree-width
+Bayesian networks using integer linear programming. In Articial Intelligence and Statistics , pages
+751{759, 2014.
+[180] Kaustubh R Patil, Jerry Zhu,  L ukasz Kope c, and Bradley C Love. Optimal teaching for limited-capacity
+human learners. In Z. Ghahramani, M. Welling, C. Cortes, N. D. Lawrence, and K. Q. Weinberger, editors,
+Advances in Neural Information Processing Systems 27 , pages 2465{2473. Curran Associates, Inc., 2014.
+[181] Harold J. Payne and William S. Meisel. An algorithm for constructing optimal binary decision trees.
+IEEE Transactions on Computers , 26(9):905{916, 1977.
+[182] Fabian Pedregosa, Ga el Varoquaux, Alexandre Gramfort, Vincent Michel, Bertrand Thirion, Olivier
+Grisel, Mathieu Blondel, Peter Prettenhofer, Ron Weiss, Vincent Dubourg, Alexandre Passos Jake Van-
+derpla and, David Cournapeau, Matthieu Brucher, Matthieu Perrot, and Edouard Duchesnay. Scikit-
+learn: Machine learning in Python. Journal of Machine Learning Research , 12:2825{2830, 2011.
+[183] Selwyn Piramuthu. Evaluating feature selection methods for learning in data mining applications. Eu-
+ropean Journal of Operational Research , 156(2):483{494, 2004.
+[184] Tomaso Poggio, Kenji Kawaguchi, Qianli Liao, Brando Miranda, Lorenzo Rosasco, Xavier Boix, Jack
+Hidary, and Hrushikesh Mhaskar. Theory of deep learning III: explaining the non-overtting puzzle.
+Technical report, arXiv preprint 1801.00173, 2017.
+[185] Robert Reris and Jean Paul Brooks. Principal component analysis and optimization: a tutorial. Technical
+report, Virginia Commonwealth University, 2015.
+[186] Herbert Robbins and Sutton Monro. A stochastic approximation method. In Herbert Robbins Selected
+Papers , pages 102{109. Springer, 1985.
+[187] Riccardo Rovatti, Claudia D'Ambrosio, Andrea Lodi, and Silvano Martello. Optimistic MILP modeling
+of non-linear optimization problems. European Journal of Operational Research , 239(1):32{45, 2014.
+[188] Burcu Sa glam, F. Sibel Salman, Serpil Sayn, and Metin T urkay. A mixed-integer programming approach
+to the clustering problem with an application in customer segmentation. European Journal of Operational
+Research , 173(3):866{879, 2006.
+[189] Everton Santi, Daniel Aloise, and Simon J. Blanchard. A model for clustering data from heterogeneous
+dissimilarities. European Journal of Operational Research , 253(3):659{672, 2016.
+[190] Mauro Scanagatta, Giorgio Corani, Cassio P de Campos, and Marco Zaalon. Learning treewidth-
+bounded bayesian networks with thousands of variables. In D. D. Lee, M. Sugiyama, U. V. Luxburg,
+I. Guyon, and R. Garnett, editors, Advances in Neural Information Processing Systems , pages 1462{1470.
+Curran Associates, Inc., 2016.
+[191] Stephan Scheuerer and Rolf Wendolsky. A scatter search heuristic for the capacitated clustering problem.
+European Journal of Operational Research , 169(2):533{547, 2006.
+[192] Anita Sch obel. Locating least-distant lines in the plane. European Journal of Operational Research ,
+106(1):152{159, 1998.
+[193] Thiago Serra, Christian Tjandraatmadja, and Srikumar Ramalingam. Bounding and counting linear
+regions of deep neural networks. In Proceeding of the International Conference on Machine Learning ,
+pages 4558{4566, 2018.
+[194] Uri Shaham, Yutaro Yamada, and Sahand Negahban. Understanding adversarial training: Increasing
+local stability of supervised models through robust optimization. Neurocomputing , 307:195{204, 2018.
+39[195] Amnon Shashua and Anat Levin. Ranking with large margin principle: Two approaches. In S. Becker,
+S. Thrun, and K. Obermayer, editors, Advances in Neural Information Processing Systems , pages 961{
+968. MIT Press, 2003.
+[196] Ayumi Shinohara and Satoru Miyano. Teachability in computational learning. New Generation Com-
+puting , 8(4):337{347, Feb 1991.
+[197] Alex J Smola and Bernhard Sch olkopf. A tutorial on support vector regression. Statistics and Computing ,
+14(3):199{222, 2004.
+[198] Raymond J. Solomono. An inductive inference machine. In IRE Convention Record, Section on Infor-
+mation Theory , volume 2, pages 56{62, 1957.
+[199] Heda Song, Isaac Triguero, and Ender Ozcan. A review on the self and dual interactions between machine
+learning and optimisation. Progress in Articial Intelligence , 8(2):143{165, 2019.
+[200] Jacob Steinhardt, Pang Wei W Koh, and Percy S Liang. Certied defenses for data poisoning attacks. In
+I. Guyon, U. V. Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett, editors,
+Advances in Neural Information Processing Systems , pages 3517{3529. Curran Associates, Inc., 2017.
+[201] Christian Szegedy, Wojciech Zaremba, Ilya Sutskever, Joan Bruna, Dumitru Erhan, Ian Goodfellow, and
+Rob Fergus. Intriguing properties of neural networks. Technical report, arXiv preprint 1312.6199, 2013.
+[202] Ryuta Tamura, Ken Kobayashi, Yuichi Takano, Ryuhei Miyashiro, Kazuhide Nakata, and Tomomi Mat-
+sui. Best subset selection for eliminating multicollinearity. Journal of the Operations Research Society of
+Japan , 60(3):321{336, 2017.
+[203] Ryuta Tamura, Ken Kobayashi, Yuichi Takano, Ryuhei Miyashiro, Kazuhide Nakata, and Tomomi Mat-
+sui. Mixed integer quadratic optimization formulations for eliminating multicollinearity based on variance
+ination factor. Journal of Global Optimization , 73(2):431{446, 2019.
+[204] Pakize Taylan, G-W Weber, and Amir Beck. New approaches to regression by generalized additive models
+and continuous optimization for modern applications in nance, science and technology. Optimization ,
+56(5-6):675{698, 2007.
+[205] Sunil Tiwari, H.M. Wee, and Yosef Daryanto. Big data analytics in supply chain management between
+2010 and 2016: Insights to industries. Computers & Industrial Engineering , 115:319{330, 2018.
+[206] Vincent Tjeng and Russ Tedrake. Evaluating robustness of neural networks with mixed integer program-
+ming. Technical report, arXiv preprint 1711.07356, 2017.
+[207] Alejandro Toriello and Juan Pablo Vielma. Fitting piecewise linear continuous functions. European
+Journal of Operational Research , 219(1):86{95, 2012.
+[208] Florian Tram er, Alexey Kurakin, Nicolas Papernot, Ian Goodfellow, Dan Boneh, and Patrick McDaniel.
+Ensemble adversarial training: Attacks and defenses. Technical report, arXiv preprint 1705.07204, 2017.
+[209] Vladimir Vapnik. Statistical Learning Theory , volume 3. Wiley, New York, 1998.
+[210] Vladimir Vapnik. The Nature of Statistical Learning Theory . Springer Science & Business Media, 2013.
+[211] Sicco Verwer and Yingqian Zhang. Learning decision trees with exible constraints and objectives us-
+ing integer optimization. In Proceedings of the International Conference on AI and OR Techniques in
+Constraint Programming for Combinatorial Optimization Problems , pages 94{103, 2017.
+[212] Sicco Verwer, Yingqian Zhang, and Qing Chuan Ye. Auction optimization using regression trees and
+linear models as integer programs. Articial Intelligence , 244:368{395, 2017.
+[213] Juan Pablo Vielma, Shabbir Ahmed, and George Nemhauser. Mixed-integer models for nonseparable
+piecewise-linear optimization: Unifying framework and extensions. Operations Research , 58(2):303{315,
+2010.
+40[214] Roman V aclav k, Anton n Nov ak, P remysl S ucha, and Zden ek Hanz alek. Accelerating the branch-and-
+price algorithm using machine learning. European Journal of Operational Research , 271(3):1055{1069,
+2018.
+[215] Gang Wang, Angappa Gunasekaran, Eric W.T. Ngai, and Thanos Papadopoulos. Big data analytics in lo-
+gistics and supply chain management: Certain investigations for research and applications. International
+Journal of Production Economics , 176:98{110, 2016.
+[216] Hua Wang, Chris Ding, and Heng Huang. Multi-label linear discriminant analysis. In Proceedings of the
+European Conference on Computer Vision , pages 126{139, 2010.
+[217] Li Wang, Ji Zhu, and Hui Zou. The doubly regularized support vector machine. Statistica Sinica ,
+16(2):589, 2006.
+[218] Yizhen Wang and Kamalika Chaudhuri. Data poisoning attacks against online learning. Technical report,
+arXiv preprint 1808.08994, 2018.
+[219] Yuan Wang, Dongxiang Zhang, Ying Liu, Bo Dai, and Loo Hay Lee. Enhancing transportation systems
+via deep learning: A survey. Transportation Research Part C: Emerging Technologies , 99:144{163, 2019.
+[220] Martin Wistuba, Ambrish Rawat, and Tejaswini Pedapati. A survey on neural architecture search.
+Technical report, arXiv preprint arXiv:1905.01392, 2019.
+[221] Stephen J Wright. Optimization algorithms for data analysis. In Michael Mahoney, John Duchi, and
+Anna Gilbert, editors, The Mathematics of Data , pages 49{98. American Mathematical Society, 2018.
+[222] Changhe Yuan and Brandon Malone. Learning optimal Bayesian networks: A shortest path perspective.
+Journal of Articial Intelligence Research , 48:23{65, 2013.
+[223] Jerry Zhu. Machine teaching for bayesian learners in the exponential family. In C. J. C. Burges, L. Bottou,
+M. Welling, Z. Ghahramani, and K. Q. Weinberger, editors, Advances in Neural Information Processing
+Systems , pages 1905{1913. Curran Associates, Inc., 2013.
+[224] Ji Zhu, Saharon Rosset, Robert Tibshirani, and Trevor J. Hastie. 1-Norm support vector machines. In
+S. Thrun, L. K. Saul, and B. Sch olkopf, editors, Advances in Neural Information Processing Systems ,
+pages 49{56. MIT Press, 2004.
+[225] Xiaojin Zhu. Machine teaching: An inverse problem to machine learning and an approach toward optimal
+education. In Proceedings of the AAAI Conference on Articial Intelligence , pages 4083{4087, 2015.
+[226] Xiaojin Zhu, Adish Singla, Sandra Zilles, and Anna N Raerty. An overview of machine teaching.
+Technical report, arXiv preprint 1801.05927, 2018.
+[227] Martin Zinkevich. Online convex programming and generalized innitesimal gradient ascent. In Proceed-
+ings of the International Conference on Machine Learning , pages 928{936, 2003.
+[228] Hui Zou and Trevor Hastie. Regularization and variable selection via the elastic net. Journal of the Royal
+Statistical Society: Series B (Statistical Methodology) , 67(2):301{320, 2005.
+41
