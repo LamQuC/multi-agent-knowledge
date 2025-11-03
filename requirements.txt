@@ -1,0 +1,32 @@
+# === Core AI + LangChain (latest stable unified versions) ===
+langchain==0.3.7
+langchain-core==0.3.17
+langchain-community==0.3.7
+langchain-google-genai==2.0.5
+openai>=1.12.0
+tiktoken>=0.7.0
+
+# === Vectorstore + Embeddings ===
+faiss-cpu
+sentence-transformers
+transformers
+torch
+
+# === Data Handling ===
+pandas
+numpy<2.0.0
+pypdf
+requests
+
+# === Environment & Utilities ===
+python-dotenv
+huggingface-hub
+
+# === Web/API frameworks ===
+fastapi
+uvicorn
+streamlit
+
+# === Testing ===
+pytest
+fastapi

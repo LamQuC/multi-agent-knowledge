@@ -1,0 +1,65 @@
+multi-agent-knowledge/
+│
+├── docs/
+│   ├── architecture.md                  # Kiến trúc hệ thống tổng quan
+│   └── plan_week1.md                    # Kế hoạch triển khai theo ngày
+│
+├── data/
+│   ├── raw/                             # 📄 Chứa các PDF gốc bạn đã tải (papers)
+│   └── processed/                       
+│       ├── các file.txt được parse                # Văn bản sau khi parse và chunk
+│       ├── meta.json                  
+│       ├── chunks.json              
+│       └── conversation_history.json    
+│
+├── src/
+│   ├── api/
+│   │   ├── main.py                      # FastAPI backend (gọi agents, model)
+│   │   └── routers/
+│   │       └── chưa có file gì                  # Endpoint nhận và trả lời hội thoại
+│   │
+│   ├── frontend/
+│   │   └── app.py                       # Streamlit UI giao tiếp người dùng
+│   │
+│   ├── agents/
+│   │   ├── base_agent.py ⭐              # Lớp cơ sở cho tất cả agents (sử dụng Gemini 2.5)
+│   │   ├── router.py ⭐                  # Điều phối intent → agent tương ứng
+│   │   ├── knowledge_agent.py ⭐         # Agent RAG chính: retrieve & trả lời dựa trên PDF
+│   │   ├── explain_agent.py             # Giải thích concept
+│   │   ├── code_agent.py                # Sinh code Python minh họa
+│   │   └── __init__.py
+│   ├   └──  memory/
+│   │       ├── memory_manager.py ⭐          # Bộ nhớ ngắn hạn (deque 5 lượt)
+│   │       ├── long_term_memory.py ⭐        # Bộ nhớ dài hạn dùng FAISS/Chroma
+│   │       
+│   │
+│   ├── ingestion/
+│   │   ├── pdf_parsing.py ⭐             # Đọc PDF và trích xuất text
+│   │   └── chunking.py ⭐                # Cắt văn bản thành từng đoạn nhỏ
+│   │
+│   ├── embeddings/
+│   │   └── embedding_builder.py ⭐       # Sinh embeddings và build FAISS index
+│   │
+│   ├── vectordb/
+│   │   └── faiss_index.py ⭐             # Quản lý truy xuất vector (search top-k)
+│   │
+│   └── utils/
+│       ├── logger.py                    # Tiện ích logging
+│       ├── config_loader.py             # Đọc config từ .env
+│       └── __init__.py
+│
+├── notebooks/
+│   └── rag_prototype.ipynb              # Thử nghiệm pipeline trước khi đóng gói
+│
+├── tests/
+│   ├── test_router.py ⭐                 # Test pipeline intent → agent
+│   ├── test_rag.py                      # Test quá trình retrieve + context
+│   ├── test_explain.py                  # Test ExplainAgent
+│   └── test_long_term_memory.py    
+│   └── test_memory_chat.py
+│   └── test_knowledge_agent.py               # Test short-term và long-term memory
+│
+├── Dockerfile                           # Docker hóa app
+├── requirements.txt                     # Thư viện Python cần thiết
+├── .env                                 # GEMINI_API_KEY, DB_PATH, ...
+└── README.md                            # Hướng dẫn setup & run
