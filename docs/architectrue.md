@@ -136,6 +136,4 @@ Multi-agent pipeline hoạt động: Router → Knowledge → Explain
 
 Kết quả có trích dẫn từ paper
 
-Có ví dụ code minh họa
-
 Cấu trúc code rõ ràng, dễ mở rộng
