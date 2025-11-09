@@ -1,30 +1,29 @@
-# src/api/main.py
-import os
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
-from src.api.routers.chat_router import router as chat_router
+from pydantic import BaseModel
 
-# =========================
-# 🚀 Logging Configuration
-# =========================
+from src.api.routers.chat_router import router as chat_router, GlobalState
+from src.agents.knowledge_agent import KnowledgeAgent
+from src.agents.explain_agent import ExplainAgent
+from src.agents.code_agent import CodeAgent
+
+# =========================== Logging setup ===========================
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 logger = logging.getLogger("multi-agent-backend")
 
-# =========================
-# 🌐 FastAPI App Init
-# =========================
+# =========================== App init ===========================
 app = FastAPI(
     title="Multi-Agent Knowledge API",
     description="Backend API for multi-agent knowledge & code assistant",
-    version="1.0.0"
+    version="1.2.0"
 )
 
-# Allow frontend & external clients
+# =========================== CORS ===========================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -33,50 +32,51 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register chat router
+# =========================== Routers ===========================
 app.include_router(chat_router, prefix="")
 
-# =========================
-# 🏠 Basic Root Endpoint
-# =========================
+# =========================== Models ===========================
+class QueryRequest(BaseModel):
+    query: str
+    agent: str = "auto"       # 'auto' or ['knowledge', 'explain', 'code']
+    web_search: bool = True   # toggle web search
+    mode: str = "auto"        # 'auto' | 'manual'
+
+# =========================== Endpoints ===========================
 @app.get("/")
 def root():
     return {"message": "Multi-Agent Knowledge API is running."}
 
-# =========================
-# ❤️ Health Check Endpoint
-# =========================
 @app.get("/health")
 def health():
-    """
-    Simple health check — can be used by Docker, monitoring tools, or uptime checks.
-    """
-    details = {
-        "status": "ok",
-        "env": os.getenv("ENV", "development"),
-        "service": "multi-agent-backend"
-    }
-    logger.info("Health check passed.")
-    return JSONResponse(content=details, status_code=200)
+    return JSONResponse({"status": "ok"}, status_code=200)
 
-# =========================
-# ⚙️ Readiness Check Endpoint
-# =========================
-@app.get("/ready")
-def ready():
+@app.post("/route")
+def route_query(request: QueryRequest):
     """
-    Readiness probe — verify that required environment variables exist.
+    Route query to the selected agent (manual mode).
+    Auto mode default = KnowledgeAgent.
     """
-    required_envs = ["MODEL_CODE", "MODEL_EXPLAIN"]
-    missing = [var for var in required_envs if not os.getenv(var)]
-    ready_status = len(missing) == 0
+    try:
+        # Cập nhật trạng thái web search toàn cục
+        GlobalState.web_search_enabled = request.web_search
+        KnowledgeAgent.enable_web_search = request.web_search
 
-    details = {
-        "ready": ready_status,
-        "missing_env": missing,
-        "service": "multi-agent-backend"
-    }
+        # Manual mode: gọi agent được chọn
+        if request.mode.lower() == "manual" and request.agent in ["knowledge", "explain", "code"]:
+            agent_map = {
+                "knowledge": KnowledgeAgent(),
+                "explain": ExplainAgent(),
+                "code": CodeAgent(),
+            }
+            result = agent_map[request.agent].run(request.query)
+            return {"intent": request.agent, "answer": result}
 
-    status_code = 200 if ready_status else 503
-    logger.info(f"Readiness check: {details}")
-    return JSONResponse(content=details, status_code=status_code)
+        # Auto mode (không còn auto detect intent nữa)
+        # => mặc định gọi KnowledgeAgent
+        result = KnowledgeAgent().run(request.query)
+        return {"intent": "knowledge", "answer": result}
+
+    except Exception as e:
+        logger.exception(f"[ERROR] /route failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

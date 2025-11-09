@@ -1,4 +1,4 @@
-class ListNode:
-    def __init__(self, val=0, next=None):
-        head = ListNode(1, ListNode(2))
-        print(head.next)  
+from langchain_community.tools import DuckDuckGoSearchRun
+
+tool = DuckDuckGoSearchRun()
+print(tool.invoke("3i Atlas"))  # Example usage

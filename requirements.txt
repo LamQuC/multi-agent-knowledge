@@ -23,10 +23,15 @@ python-dotenv
 huggingface-hub
 
 # === Web/API frameworks ===
-fastapi
-uvicorn
-streamlit
+fastapi==0.115.0
+uvicorn[standard]
+streamlit==1.39.0
+
+# === Search & External Info ===
+duckduckgo-search
+wikipedia
+beautifulsoup4
+ddgs
 
 # === Testing ===
 pytest
-fastapi

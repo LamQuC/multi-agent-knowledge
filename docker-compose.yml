@@ -8,7 +8,6 @@ services:
       - .env
     volumes:
       - ./:/app
-
   frontend:
     build:
       context: .
@@ -19,3 +18,5 @@ services:
       - API_URL=http://backend:8000/chat
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app/frontend
